@@ -1,0 +1,13 @@
+{
+  "slug": "balanzas-electronicas",
+  "titulo": "Reparación y Mantenimiento de Balanzas Electrónicas",
+  "version": "REV00",
+  "modulos": [
+    { "orden": 1, "slug": "01-introduccion",              "titulo": "Introducción",                 "tiene_evaluacion": true  },
+    { "orden": 2, "slug": "02-celdas-de-carga",           "titulo": "Celdas de Carga",              "tiene_evaluacion": true  },
+    { "orden": 3, "slug": "03-controladores",             "titulo": "Indicadores y Controladores",  "tiene_evaluacion": true  },
+    { "orden": 4, "slug": "04-ensayos-y-recomendaciones", "titulo": "Ensayos y Recomendaciones",    "tiene_evaluacion": true  },
+    { "orden": 5, "slug": "05-referencias-externas",      "titulo": "Referencias Externas",         "tiene_evaluacion": false },
+    { "orden": 6, "slug": "06-anexos",                    "titulo": "Anexos",                       "tiene_evaluacion": false }
+  ]
+}
