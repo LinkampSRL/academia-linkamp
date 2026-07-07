@@ -1,0 +1,117 @@
+{
+  "modulo": "02-celdas-de-carga",
+  "nota_minima_aprobacion": 80,
+  "preguntas_por_intento": 5,
+  "preguntas": [
+    {
+      "id": "02-01",
+      "enunciado": "¿Qué elemento transforma la carga mecánica en una señal eléctrica en una celda de carga?",
+      "opciones": [
+        "Indicador",
+        "Celda de carga",
+        "Galga extensiométrica (strain gage)",
+        "Placa sumadora"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "id": "02-02",
+      "enunciado": "¿Qué material se utiliza habitualmente para fabricar celdas de carga de baja capacidad y bajo costo?",
+      "opciones": [
+        "Acero inoxidable",
+        "Titanio",
+        "Aluminio",
+        "Aleación de acero"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "id": "02-03",
+      "enunciado": "Una celda de carga tiene sensibilidad de 2 mV/V y capacidad máxima de 10 kg. Si se alimenta con 5 V y se aplica una carga de 5 kg, ¿cuál es la señal de salida?",
+      "opciones": [
+        "10 mV",
+        "5 mV",
+        "2 mV",
+        "20 mV"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "02-04",
+      "enunciado": "¿Cuáles son los colores de los cables de excitación (alimentación) en las celdas Zell?",
+      "opciones": [
+        "Verde y blanco",
+        "Rojo y negro",
+        "Amarillo y azul",
+        "Azul y verde"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "02-05",
+      "enunciado": "¿Qué tipo de celda de carga admite la aplicación de cargas fuera de su centro geométrico por diseño?",
+      "opciones": [
+        "Viga al corte",
+        "Tipo \"S\"",
+        "Monocelda",
+        "Doble viga al corte"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "id": "02-06",
+      "enunciado": "¿Qué circuito se utiliza internamente en las celdas de carga para medir la variación de resistencia de las galgas?",
+      "opciones": [
+        "Circuito rectificador",
+        "Puente de Wheatstone",
+        "Amplificador operacional",
+        "Convertidor analógico-digital"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "02-07",
+      "enunciado": "¿Qué indica el \"balance de cero\" de una celda de carga?",
+      "opciones": [
+        "El valor de la señal de salida a carga máxima",
+        "La resistencia de entrada de la celda",
+        "La señal de salida con excitación y sin carga aplicada",
+        "La temperatura de operación de la celda"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "id": "02-08",
+      "enunciado": "¿Cuántos conductores se emplean típicamente para el cableado de una celda de carga (sin contar el cable de malla)?",
+      "opciones": [
+        "2",
+        "3",
+        "4",
+        "6"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "id": "02-09",
+      "enunciado": "¿Cuál es el rango de capacidades máximas más usual para una celda de carga tipo viga al corte?",
+      "opciones": [
+        "1 kg a 50 kg",
+        "100 kg a 10.000 kg",
+        "50 kg a 20.000 kg",
+        "10.000 kg a 50.000 kg"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "02-10",
+      "enunciado": "En el test report de una celda de carga, ¿qué mide la \"No Linealidad\"?",
+      "opciones": [
+        "El cambio de señal de salida en el tiempo con carga constante",
+        "La desviación máxima de la curva de calibración respecto de una línea recta ideal entre cero y carga máxima",
+        "La diferencia entre lecturas incrementando y decrementando la carga",
+        "El cambio en la señal de salida debido a variaciones de temperatura"
+      ],
+      "respuesta_correcta": 1
+    }
+  ]
+}

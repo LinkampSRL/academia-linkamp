@@ -1,0 +1,117 @@
+{
+  "modulo": "01-introduccion",
+  "nota_minima_aprobacion": 80,
+  "preguntas_por_intento": 5,
+  "preguntas": [
+    {
+      "id": "01-01",
+      "enunciado": "¿Cuál es la función de la celda de carga en una balanza electrónica?",
+      "opciones": [
+        "Visualizar el peso en pantalla",
+        "Transformar la carga mecánica en una señal eléctrica proporcional",
+        "Comunicar la balanza con una impresora",
+        "Ajustar la división mínima"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "01-02",
+      "enunciado": "¿Qué es el \"valor de la división\" (dd) en una balanza?",
+      "opciones": [
+        "La capacidad máxima del instrumento",
+        "El peso mínimo que puede medirse",
+        "La diferencia entre dos indicaciones consecutivas",
+        "El número de celdas de carga del sistema"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "id": "01-03",
+      "enunciado": "¿Cuántas divisiones máximas puede tener una balanza de clase (III) según la tabla de clasificación?",
+      "opciones": [
+        "100.000",
+        "1.000",
+        "Sin límite",
+        "10.000"
+      ],
+      "respuesta_correcta": 3
+    },
+    {
+      "id": "01-04",
+      "enunciado": "¿Para qué se utiliza la placa sumadora en sistemas con más de una celda de carga?",
+      "opciones": [
+        "Para visualizar el peso en pantalla",
+        "Para conectar las celdas y ajustar individualmente la salida de cada una",
+        "Para alimentar eléctricamente las celdas",
+        "Para medir la temperatura del sistema"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "01-05",
+      "enunciado": "¿Cuál es la unidad de masa adoptada por el SIMELA en Argentina?",
+      "opciones": [
+        "Libra [lb]",
+        "Gramo [g]",
+        "Newton [N]",
+        "Kilogramo [kg]"
+      ],
+      "respuesta_correcta": 3
+    },
+    {
+      "id": "01-06",
+      "enunciado": "¿Cuáles son los dos componentes esenciales presentes en toda balanza, sin importar su diseño?",
+      "opciones": [
+        "Celda de carga y placa sumadora",
+        "Dispositivo receptor de carga y dispositivo de visualización o indicador",
+        "Impresora y sistema de comunicación",
+        "Procesador de datos y pantalla táctil"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "01-07",
+      "enunciado": "Según la definición metrológica, ¿qué es la \"Capacidad mínima (Mín.)\"?",
+      "opciones": [
+        "La capacidad máxima de pesada del instrumento",
+        "El valor por debajo del cual las pesadas están afectadas de un error relativo importante",
+        "La diferencia entre dos indicaciones consecutivas",
+        "El cociente entre la capacidad máxima y el valor de la división"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "01-08",
+      "enunciado": "¿Qué fórmula permite calcular el número de divisiones (n) de un instrumento?",
+      "opciones": [
+        "n = dd / Máx.",
+        "n = Máx. × dd",
+        "n = Máx. / dd",
+        "n = Mín. / dd"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "id": "01-09",
+      "enunciado": "¿Qué cualidad metrológica describe la capacidad de un instrumento para suministrar resultados idénticos ante una misma carga depositada varias veces?",
+      "opciones": [
+        "Movilidad",
+        "Fidelidad",
+        "Precisión de clase",
+        "Capacidad mínima"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "01-10",
+      "enunciado": "Según la tabla de clasificación por número de divisiones, ¿qué clase corresponde a la precisión \"Fina\", con n máximo de 100.000?",
+      "opciones": [
+        "Clase (I)",
+        "Clase (II)",
+        "Clase (III)",
+        "Clase (IIII)"
+      ],
+      "respuesta_correcta": 1
+    }
+  ]
+}

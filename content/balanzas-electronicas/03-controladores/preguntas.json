@@ -1,0 +1,139 @@
+{
+  "modulo": "03-controladores",
+  "nota_minima_aprobacion": 80,
+  "preguntas_por_intento": 5,
+  "preguntas": [
+    {
+      "id": "03-01",
+      "enunciado": "¿Qué procesa el conversor analógico-digital de un controlador?",
+      "opciones": [
+        "La energía de alimentación de la celda de carga",
+        "La señal analógica proveniente de las celdas de carga, generando cuentas internas",
+        "Las instrucciones del teclado del indicador",
+        "La comunicación con la impresora de tickets"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "03-02",
+      "enunciado": "¿Qué obtiene el procesador del controlador a partir de las cuentas internas del conversor?",
+      "opciones": [
+        "El filtro de vibraciones",
+        "Valores de peso",
+        "La curva de calibración de fábrica",
+        "El código de la celda de carga"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "03-03",
+      "enunciado": "Al conectar los conductores de una celda de carga mediante bornera, ¿qué práctica se recomienda para evitar falsos contactos?",
+      "opciones": [
+        "Utilizar solo conectores de fábrica",
+        "Estañar la punta de los conductores",
+        "Soldar los conductores directamente a la placa",
+        "Utilizar cable de mayor sección"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "03-04",
+      "enunciado": "¿Por qué en las balanzas de uso comercial el acceso a la configuración de calibración debe estar protegido por un precinto o faja de seguridad?",
+      "opciones": [
+        "Para prolongar la vida útil de la celda de carga",
+        "Para evitar que se cambien intencionalmente los valores y la balanza pese de más o de menos",
+        "Para cumplir con el manual del fabricante del display",
+        "Para permitir el acceso remoto por Wi-Fi"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "03-05",
+      "enunciado": "Si \"n\" es el número de divisiones, ¿cuál es la fórmula correcta para calcularlo a partir de la capacidad máxima (Máx.) y la división mínima (dd)?",
+      "opciones": [
+        "n = dd / Máx.",
+        "n = Máx. × dd",
+        "n = Máx. / dd",
+        "n = Máx. + dd"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "id": "03-06",
+      "enunciado": "En la curva de calibración de un controlador, ¿qué representa el \"ajuste de span\"?",
+      "opciones": [
+        "Registrar el valor entregado por la celda con la plataforma vacía",
+        "Referenciar al controlador un valor de peso conocido asociado a la señal de la celda de carga",
+        "Definir el filtro de vibraciones del indicador",
+        "Establecer la unidad primaria de medición (kg o g)"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "03-07",
+      "enunciado": "¿Qué porcentaje mínimo de la capacidad máxima se recomienda como peso de referencia para realizar el ajuste de span?",
+      "opciones": [
+        "5%",
+        "10%",
+        "20%",
+        "50%"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "id": "03-08",
+      "enunciado": "En el controlador DRACO, ¿cuál es el valor máximo de capacidad permitido según el parámetro [CA.4] 'CAPAC'?",
+      "opciones": [
+        "30.000 kg o 150.000 divisiones, lo que sea menor",
+        "150.000 kg o 30.000 divisiones, lo que sea menor",
+        "100.000 kg fijos",
+        "50.000 divisiones fijas"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "03-09",
+      "enunciado": "Según la Nota 2 del procedimiento de calibración [CA.5] 'CAL', ¿qué peso patrón se recomienda utilizar?",
+      "opciones": [
+        "Menor al 10% de la capacidad del controlador",
+        "Exactamente igual a la capacidad máxima",
+        "Mayor al 30% de la capacidad del controlador",
+        "Cualquier peso disponible, sin restricción"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "id": "03-10",
+      "enunciado": "¿Para qué situación es especialmente útil el parámetro [CA.7] 'AJ.SPA' (Ajuste de Span)?",
+      "opciones": [
+        "Para calibrar únicamente el cero al encender el equipo",
+        "Para ajustar el span en tanques y tolvas donde es dificultoso aplicar pesas patrón",
+        "Para seleccionar la unidad de medida primaria",
+        "Para deshabilitar el auto cero tracking"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "id": "03-11",
+      "enunciado": "Según el parámetro [CA.8] 'CE.INI' (Cero Inicial), ¿qué indica el display si el peso está fuera del rango de puesta a cero automático al encender el indicador?",
+      "opciones": [
+        "[Err 0]",
+        "[CA.9]",
+        "El valor de span configurado",
+        "La capacidad máxima configurada"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "id": "03-12",
+      "enunciado": "¿Cada cuánto tiempo actúa el Auto Cero Tracking [CA.9] cuando el peso es estable y está dentro de la banda configurada?",
+      "opciones": [
+        "Cada 0,5 segundos",
+        "Cada 1,5 segundos",
+        "Cada 5 segundos",
+        "Cada 10 segundos"
+      ],
+      "respuesta_correcta": 1
+    }
+  ]
+}

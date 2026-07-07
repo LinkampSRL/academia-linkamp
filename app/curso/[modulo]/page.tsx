@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getCourse } from '@/lib/course'
 import { getModuleContent, getModuleSections } from '@/lib/content'
+import { tienePreguntas } from '@/lib/preguntas'
 import ModuleContent from '@/components/ModuleContent'
 import Link from 'next/link'
 
@@ -81,6 +82,24 @@ export default async function ModulePage({
       </div>
 
       <ModuleContent content={content} />
+
+      {/* CTA de evaluación — solo visible en módulos con banco de preguntas cargado */}
+      {tienePreguntas(slug) && (
+        <div className="mt-16 flex items-center justify-between gap-4 bg-blue-50/50 border border-blue-100 rounded-xl px-6 py-5">
+          <div>
+            <p className="text-[13px] font-medium text-gray-900">¿Ya leíste todo el módulo?</p>
+            <p className="text-[12px] text-gray-500 mt-0.5">
+              Poné a prueba lo aprendido con la evaluación del módulo.
+            </p>
+          </div>
+          <Link
+            href={`/curso/${slug}/evaluacion`}
+            className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            Rendir evaluación
+          </Link>
+        </div>
+      )}
 
       {/* Navegación anterior / siguiente */}
       <div className="flex items-start justify-between mt-16 pt-8 border-t border-gray-100">
