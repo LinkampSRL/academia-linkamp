@@ -27,14 +27,14 @@
     },
     {
       "id": "02-03",
-      "enunciado": "Una celda de carga tiene sensibilidad de 2 mV/V y capacidad máxima de 10 kg. Si se alimenta con 5 V y se aplica una carga de 5 kg, ¿cuál es la señal de salida?",
+      "enunciado": "Una celda de carga tiene sensibilidad de 2 mV/V y capacidad máxima de 10 kg, alimentada con 5 V. Si aplicamos una carga de 8 kg, ¿cuál es la señal de salida?",
       "opciones": [
+        "8 mV",
         "10 mV",
-        "5 mV",
-        "2 mV",
-        "20 mV"
+        "16 mV",
+        "4 mV"
       ],
-      "respuesta_correcta": 1
+      "respuesta_correcta": 0
     },
     {
       "id": "02-04",
@@ -112,6 +112,28 @@
         "El cambio en la señal de salida debido a variaciones de temperatura"
       ],
       "respuesta_correcta": 1
+    },
+    {
+      "id": "02-11",
+      "enunciado": "Para la misma celda (sensibilidad 2 mV/V, capacidad máxima 10 kg, alimentada con 5 V), ¿cuánto es la carga aplicada si la lectura obtenida es de 2,25 mV?",
+      "opciones": [
+        "2,25 kg",
+        "4,5 kg",
+        "1,125 kg",
+        "11,25 kg"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "id": "02-12",
+      "enunciado": "Una celda de carga tiene capacidad máxima de 100 kg, sensibilidad de 3 mV/V y se alimenta con 10 V. Si la lectura obtenida es de 15 mV, ¿cuál es la carga aplicada?",
+      "opciones": [
+        "50 kg",
+        "45 kg",
+        "15 kg",
+        "100 kg"
+      ],
+      "respuesta_correcta": 0
     }
   ]
 }

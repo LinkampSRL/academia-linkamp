@@ -139,13 +139,19 @@ Es decir que para una carga de 10 kg, el resultado de la medición es 10 mV. Est
 
 ### 2.5 Ficha técnica
 
-La **ficha técnica** es un documento donde encontraremos las características eléctricas de cada modelo de celda, como así también las dimensiones físicas, material y capacidades máximas disponibles. En el **Anexo A**, a modo de ejemplo, encontraremos la ficha técnica de nuestra celda marca Zell, modelo SPA.
+La **ficha técnica** es un documento donde encontraremos las características eléctricas de cada modelo de celda, como así también las dimensiones físicas, material y capacidades máximas disponibles. A modo de ejemplo, a continuación se muestra la ficha técnica de nuestra celda marca Zell, modelo SPA (disponible también en el **Anexo A**).
+
+![Ficha técnica celda Zell SPA](./imagenes/imagen_27_ficha_tecnica_celda_spa.jpeg)
+*Imagen 27 — Ficha técnica celda Zell, modelo SPA.*
 
 ---
 
 ### 2.6 Test report
 
-La mayoría de las celdas de carga, incluidas las nuestras, vienen con un **certificado de fábrica o test report**. En el **Anexo B**, encontraremos como ejemplo el test report de una de nuestras celdas.
+La mayoría de las celdas de carga, incluidas las nuestras, vienen con un **certificado de fábrica o test report**. A continuación se muestra, como ejemplo, el test report de una de nuestras celdas (disponible también en el **Anexo B**).
+
+![Test report celda Zell SPA](./imagenes/imagen_28_test_report_celda_spa.jpeg)
+*Imagen 28 — Test report celda Zell, modelo SPA.*
 
 En este documento se proporcionan los datos pertinentes de la celda de carga, referido al modelo, número de serie y capacidad. En él se detalla la sensibilidad real de la celda en mV/V y demás valores típicos de la celda. También se incluye el código de colores para el cableado.
 
@@ -285,12 +291,15 @@ Además de las ya mencionadas, hay otros tipos de celdas de carga de uso frecuen
 
 En este apartado nos encontraremos con dos tipos de celdas: las de tipo columna y las de tipo anillo. Se utilizan para cargas de compresión. Las aplicaciones de estos tipos son muy diversas, pudiéndose encontrar en plataformas camioneras, tolvas, tanques, máquinas de ensayo, etc.
 
-![Celda CCD tipo columna (izq.) y CAB tipo anillo (der)](./imagenes/imagen_19_celda_columna_y_anillo.png)
-*Imagen 19 — Celda CCD, tipo columna (izq.) y CAB tipo anillo (der).*
+![Celda CCD, tipo columna](./imagenes/imagen_19a_celda_ccd_columna.jpg)
+*Imagen 19a — Celda CCD, tipo columna.*
+
+![Celda CAB, tipo anillo](./imagenes/imagen_19b_celda_cab_anillo.png)
+*Imagen 19b — Celda CAB, tipo anillo.*
 
 ##### Doble viga al corte
 
 Las celdas del tipo doble viga al corte tienen un funcionamiento muy similar a la viga al corte; se utilizan en aplicaciones donde se requieren capacidades de carga mayores. Muy usadas en plataformas camioneras y grandes silos. También hay modelos de balanzas de gancho provistas de este tipo de celda, en general de capacidades superiores a las 10 t.
 
-![Celda doble viga al corte, modelo DVG](./imagenes/imagen_20_celda_doble_viga_dvg.png)
-*Imagen 20 — Celda doble viga al corte, modelo DVG.*
+![Celda doble viga al corte, modelo DVV](./imagenes/imagen_20_celda_doble_viga_dvg.png)
+*Imagen 20 — Celda doble viga al corte, modelo DVV.*
