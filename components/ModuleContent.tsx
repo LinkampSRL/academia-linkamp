@@ -61,12 +61,22 @@ export default function ModuleContent({ content }: ModuleContentProps) {
       const srcStr = typeof src === 'string' ? src : ''
       const resolvedSrc = srcStr.replace('./imagenes/', '/imagenes/')
       const [altText, caption] = (alt ?? '').split('|||')
+      // Imágenes 19a/19b (Módulo 2): fotos en formato retrato que a ancho completo
+      // quedan desproporcionadamente altas frente al resto de fotos del curso.
+      const esFotoCompacta =
+        resolvedSrc.includes('imagen_19a_celda_ccd_columna') ||
+        resolvedSrc.includes('imagen_19b_celda_cab_anillo') ||
+        resolvedSrc.includes('imagen_17_celda_s_tsa') ||
+        resolvedSrc.includes('imagen_18_montaje_celda_s') ||
+        resolvedSrc.includes('imagen_20_celda_doble_viga_dvg')
       return (
         <span
           className="block my-6 cursor-zoom-in"
           onClick={() => setLightbox({ src: resolvedSrc, caption: caption ?? '' })}
         >
-          <span className="block border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-shadow hover:shadow-md">
+          <span
+            className={`block border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-shadow hover:shadow-md${esFotoCompacta ? ' max-w-[280px] mx-auto' : ''}`}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={resolvedSrc}
