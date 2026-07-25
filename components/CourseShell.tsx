@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Topbar from './Topbar'
 import Sidebar from './Sidebar'
+import Watermark from './Watermark'
 import type { Curso } from '@/lib/course'
 
 interface CourseShellProps {
@@ -36,7 +37,12 @@ export default function CourseShell({ course, sectionsMap, children }: CourseShe
         )}
 
         <main className="flex-1 overflow-y-auto bg-white">
-          {children}
+          <div className="relative">
+            <Watermark />
+            <div className="relative z-10">
+              {children}
+            </div>
+          </div>
         </main>
       </div>
     </>
