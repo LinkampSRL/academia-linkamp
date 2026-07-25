@@ -7,8 +7,8 @@ version: "REV00"
 
 ## 3. Indicadores y Controladores
 
-![Controladores, Modelo DRACO (izq.) y LIBRA inox (der)](./imagenes/imagen_21_controladores_draco_libra.png)
-*Imagen 21 — Controladores: Modelo DRACO (izq.) y LIBRA inox (der).*
+![Controladores ZELL: DRACO, HIDRA LED e HIDRA LCD](./imagenes/imagen_21_controladores_draco_hidra_led_lcd.png)
+*Imagen 21 — Controladores ZELL: DRACO, HIDRA LED e HIDRA LCD.*
 
 Este es el elemento que permite la visualización de la medida en primer lugar. Después, dependiendo de la complejidad, permitirá realizar diferentes operaciones. La variedad y posibilidades es prácticamente infinita.
 

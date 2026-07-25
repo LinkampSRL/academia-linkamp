@@ -115,25 +115,25 @@
     },
     {
       "id": "03-11",
-      "enunciado": "Según el parámetro [CA.8] 'CE.INI' (Cero Inicial), ¿qué indica el display si el peso está fuera del rango de puesta a cero automático al encender el indicador?",
+      "enunciado": "¿Cuál es la utilidad de configurar el Cero Inicial (CE.INI) en un controlador de pesaje?",
       "opciones": [
-        "[Err 0]",
-        "[CA.9]",
-        "El valor de span configurado",
-        "La capacidad máxima configurada"
+        "Permitir que el indicador acepte únicamente un rango determinado de cero al encenderse, evitando iniciar con una carga indebida.",
+        "Aumentar la resolución del indicador.",
+        "Modificar la capacidad máxima de la balanza.",
+        "Calibrar automáticamente la celda de carga."
       ],
       "respuesta_correcta": 0
     },
     {
       "id": "03-12",
-      "enunciado": "¿Cada cuánto tiempo actúa el Auto Cero Tracking [CA.9] cuando el peso es estable y está dentro de la banda configurada?",
+      "enunciado": "¿Para qué sirve la función Auto Cero Tracking (AZT) en un controlador de pesaje?",
       "opciones": [
-        "Cada 0,5 segundos",
-        "Cada 1,5 segundos",
-        "Cada 5 segundos",
-        "Cada 10 segundos"
+        "Para corregir automáticamente pequeñas variaciones del cero cuando la balanza está sin carga.",
+        "Para aumentar la capacidad máxima de la balanza.",
+        "Para modificar la sensibilidad de la celda de carga.",
+        "Para cambiar la velocidad de comunicación serie."
       ],
-      "respuesta_correcta": 1
+      "respuesta_correcta": 0
     }
   ]
 }
