@@ -29,6 +29,17 @@ export default function Topbar({ onMenuToggle }: TopbarProps) {
           Academia Linkamp
         </span>
       </div>
+
+      <div className="flex-1 flex items-center justify-end px-5">
+        <form action="/auth/logout" method="post">
+          <button
+            type="submit"
+            className="text-white/60 hover:text-white text-[12px] font-medium transition-colors"
+          >
+            Cerrar sesión
+          </button>
+        </form>
+      </div>
     </header>
   )
 }
