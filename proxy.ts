@@ -1,9 +1,19 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getProfile } from '@/lib/profile'
 
-// Fase 1 del Sprint 5.2: única pregunta que resuelve este middleware es
-// "¿hay sesión válida?". No consulta profiles todavía — rol, activo y
-// fecha_vencimiento se agregan en una fase posterior.
+// Sprint 5.3: además de "¿hay sesión?", resuelve autorización según
+// `profiles`: admin siempre pasa; alumno requiere estar activo y vigente;
+// /admin es exclusivo de admin; sin fila de profile, acceso denegado.
+// /acceso-restringido, /login y /auth/* quedan fuera del `matcher` a
+// propósito — el proxy nunca corre ahí, así que ningún destino de
+// redirect puede generar un loop.
+function accesoRestringido(request: NextRequest, motivo: string) {
+  const url = new URL('/acceso-restringido', request.url)
+  url.searchParams.set('motivo', motivo)
+  return NextResponse.redirect(url)
+}
+
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
 
@@ -34,9 +44,32 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
+  const profile = await getProfile(supabase, user.id)
+
+  if (!profile) {
+    return accesoRestringido(request, 'sin_perfil')
+  }
+
+  if (profile.rol === 'admin') {
+    return response
+  }
+
+  // A partir de acá, rol === 'alumno'.
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    return accesoRestringido(request, 'no_autorizado')
+  }
+
+  if (!profile.activo) {
+    return accesoRestringido(request, 'desactivado')
+  }
+
+  if (profile.fecha_vencimiento && new Date(profile.fecha_vencimiento).getTime() < Date.now()) {
+    return accesoRestringido(request, 'vencido')
+  }
+
   return response
 }
 
 export const config = {
-  matcher: ['/', '/curso/:path*'],
+  matcher: ['/', '/curso/:path*', '/dashboard/:path*', '/admin/:path*'],
 }
