@@ -15,6 +15,10 @@ const MOTIVOS: Record<string, { titulo: string; mensaje: string }> = {
     titulo: 'Acceso no autorizado',
     mensaje: 'No tenés permisos para acceder a esta sección.',
   },
+  invitacion_invalida: {
+    titulo: 'Invitación inválida',
+    mensaje: 'Tu link de invitación no es válido o ya expiró. Pedile al administrador que te reenvíe el acceso.',
+  },
 }
 
 const DEFAULT = {
