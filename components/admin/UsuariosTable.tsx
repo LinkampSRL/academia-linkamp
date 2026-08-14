@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { calcularVigencia, type Usuario } from '@/lib/admin/usuarios'
 import RegenerarEnlaceButton from '@/components/admin/RegenerarEnlaceButton'
 
@@ -53,8 +54,20 @@ export default function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
         </thead>
         <tbody>
           {usuarios.map((usuario) => (
-            <tr key={usuario.id} className="border-b border-gray-100 last:border-0">
+            <tr
+              key={usuario.id}
+              className={`relative border-b border-gray-100 last:border-0 ${
+                usuario.rol === 'alumno' ? 'hover:bg-gray-50' : ''
+              }`}
+            >
               <td className="px-4 py-3 text-gray-900 whitespace-nowrap">
+                {usuario.rol === 'alumno' && (
+                  <Link
+                    href={`/admin/${usuario.id}`}
+                    className="absolute inset-0"
+                    aria-label={`Editar a ${usuario.nombre} ${usuario.apellido}`}
+                  />
+                )}
                 {usuario.nombre} {usuario.apellido}
               </td>
               <td className="px-4 py-3 text-gray-500">{usuario.email ?? '—'}</td>
@@ -76,7 +89,7 @@ export default function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
               <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
                 {usuario.ultimo_acceso ? formatFechaHora(usuario.ultimo_acceso) : 'Nunca'}
               </td>
-              <td className="px-4 py-3">
+              <td className="relative z-10 px-4 py-3">
                 {usuario.rol === 'alumno' && !usuario.email_confirmado ? (
                   <RegenerarEnlaceButton userId={usuario.id} />
                 ) : (

@@ -1,8 +1,9 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getProfile, type Profile } from '@/lib/profile'
-import { crearAlumno, regenerarEnlaceInvitacion } from '@/lib/admin/usuarios'
+import { crearAlumno, regenerarEnlaceInvitacion, actualizarAlumno } from '@/lib/admin/usuarios'
 
 export interface AltaAlumnoState {
   error: string | null
@@ -12,6 +13,10 @@ export interface AltaAlumnoState {
 export interface RegenerarEnlaceState {
   error: string | null
   link: string | null
+}
+
+export interface EditarAlumnoState {
+  error: string | null
 }
 
 async function requerirAdmin(): Promise<Profile | null> {
@@ -104,4 +109,53 @@ export async function regenerarEnlace(userId: string): Promise<RegenerarEnlaceSt
     }
     return { error: 'No se pudo generar un nuevo enlace. Intentá de nuevo.', link: null }
   }
+}
+
+// Edición de alumno. `id` llega pre-vinculado con .bind() desde el
+// Client Component (mismo patrón documentado de Next.js para pasar
+// argumentos extra a una Server Action usada con useActionState) — el
+// formulario nunca envía rol ni email, ni siquiera como campos ocultos.
+export async function actualizarAlumnoAction(
+  id: string,
+  _prevState: EditarAlumnoState,
+  formData: FormData
+): Promise<EditarAlumnoState> {
+  const admin = await requerirAdmin()
+  if (!admin) {
+    return { error: 'No autorizado.' }
+  }
+
+  const nombre = String(formData.get('nombre') ?? '').trim()
+  const apellido = String(formData.get('apellido') ?? '').trim()
+  const empresa = String(formData.get('empresa') ?? '').trim()
+  const fechaInicio = String(formData.get('fecha_inicio') ?? '')
+  const fechaVencimiento = String(formData.get('fecha_vencimiento') ?? '')
+  const activo = formData.get('activo') === 'on'
+
+  if (!nombre || !apellido) {
+    return { error: 'Nombre y apellido son obligatorios.' }
+  }
+  if (!fechaInicio || !fechaVencimiento) {
+    return { error: 'Fecha de inicio y fecha de vencimiento son obligatorias.' }
+  }
+  if (new Date(fechaInicio).getTime() > new Date(fechaVencimiento).getTime()) {
+    return { error: 'La fecha de inicio no puede ser posterior a la fecha de vencimiento.' }
+  }
+
+  try {
+    await actualizarAlumno(id, {
+      nombre,
+      apellido,
+      empresa,
+      activo,
+      fecha_inicio: fechaInicio,
+      fecha_vencimiento: fechaVencimiento,
+    })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[actualizarAlumnoAction] error:', message)
+    return { error: 'No se pudo actualizar el alumno. Intentá de nuevo.' }
+  }
+
+  redirect('/admin')
 }

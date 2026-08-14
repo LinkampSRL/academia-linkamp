@@ -204,6 +204,64 @@ export async function regenerarEnlaceInvitacion(userId: string): Promise<{ link:
   return { link: construirEnlaceActivacion(data.properties.hashed_token) }
 }
 
+// Trae un único alumno para la pantalla de edición. Si el id no existe
+// o pertenece a un admin, devuelve null — "obtenerAlumno" es
+// explícitamente solo-alumnos, un admin nunca es un resultado válido acá.
+export async function obtenerAlumno(id: string): Promise<Usuario | null> {
+  const admin = createAdminClient()
+
+  const { data: profile, error } = await admin.from('profiles').select('*').eq('id', id).maybeSingle()
+  if (error || !profile || (profile as Profile).rol !== 'alumno') return null
+
+  const { data: userData, error: userError } = await admin.auth.admin.getUserById(id)
+  if (userError || !userData.user) return null
+
+  return {
+    ...(profile as Profile),
+    email: userData.user.email ?? null,
+    ultimo_acceso: userData.user.last_sign_in_at ?? null,
+    email_confirmado: Boolean(userData.user.email_confirmed_at),
+  }
+}
+
+export type EditarAlumnoInput = {
+  nombre: string
+  apellido: string
+  empresa: string
+  activo: boolean
+  fecha_inicio: string
+  fecha_vencimiento: string
+}
+
+// rol/email nunca se tocan acá (ni siquiera se reciben). El
+// `.eq('rol', 'alumno')` es una salvaguarda adicional en la propia query:
+// aunque algo más arriba fallara al validar, esta escritura físicamente
+// no puede alcanzar una fila de admin. `.select('id')` sobre el update
+// permite detectar "no se actualizó ninguna fila" (id inexistente o no
+// era alumno) en vez de fallar en silencio.
+export async function actualizarAlumno(id: string, input: EditarAlumnoInput): Promise<void> {
+  const admin = createAdminClient()
+
+  const { data, error } = await admin
+    .from('profiles')
+    .update({
+      nombre: input.nombre,
+      apellido: input.apellido,
+      empresa: input.empresa,
+      activo: input.activo,
+      fecha_inicio: input.fecha_inicio,
+      fecha_vencimiento: input.fecha_vencimiento,
+    })
+    .eq('id', id)
+    .eq('rol', 'alumno')
+    .select('id')
+
+  if (error) throw error
+  if (!data || data.length === 0) {
+    throw new Error('No se encontró un alumno con ese id para actualizar.')
+  }
+}
+
 export const USUARIOS_POR_PAGINA = 20
 
 export function paginarUsuarios(usuarios: Usuario[], pagina: number) {
