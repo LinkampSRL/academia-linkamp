@@ -1,15 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import {
   seleccionarAleatorias,
-  calcularResultado,
   type BancoPreguntas,
   type Respuesta,
-  type Resultado,
+  type ResumenIntentos,
 } from '@/lib/evaluacion'
 import type { Modulo } from '@/lib/course'
+import { registrarIntentoEvaluacion, type ResultadoIntento } from '@/app/curso/actions'
 
 interface EvaluacionRunnerProps {
   banco: BancoPreguntas
@@ -17,6 +17,7 @@ interface EvaluacionRunnerProps {
   moduloOrden: number
   moduloTitulo: string
   modulos: Modulo[]
+  resumenIntentos: ResumenIntentos | null
 }
 
 type Fase = 'en-progreso' | 'resultado'
@@ -27,13 +28,16 @@ export default function EvaluacionRunner({
   moduloOrden,
   moduloTitulo,
   modulos,
+  resumenIntentos,
 }: EvaluacionRunnerProps) {
   const [preguntasIntento, setPreguntasIntento] = useState(() =>
     seleccionarAleatorias(banco.preguntas, banco.preguntas_por_intento)
   )
   const [respuestas, setRespuestas] = useState<Record<string, number>>({})
   const [fase, setFase] = useState<Fase>('en-progreso')
-  const [resultado, setResultado] = useState<Resultado | null>(null)
+  const [resultado, setResultado] = useState<ResultadoIntento | null>(null)
+  const [errorEnvio, setErrorEnvio] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
 
   const todasContestadas = preguntasIntento.every((p) => respuestas[p.id] !== undefined)
 
@@ -46,20 +50,24 @@ export default function EvaluacionRunner({
       preguntaId: p.id,
       opcionSeleccionada: respuestas[p.id],
     }))
-    const resultadoCalculado = calcularResultado(
-      moduloSlug,
-      preguntasIntento,
-      respuestasArray,
-      banco.nota_minima_aprobacion
-    )
-    setResultado(resultadoCalculado)
-    setFase('resultado')
+
+    setErrorEnvio(null)
+    startTransition(async () => {
+      const registro = await registrarIntentoEvaluacion(moduloSlug, respuestasArray)
+      if (!registro.ok) {
+        setErrorEnvio(registro.error)
+        return
+      }
+      setResultado(registro.resultado)
+      setFase('resultado')
+    })
   }
 
   function handleReintentar() {
     setPreguntasIntento(seleccionarAleatorias(banco.preguntas, banco.preguntas_por_intento))
     setRespuestas({})
     setResultado(null)
+    setErrorEnvio(null)
     setFase('en-progreso')
   }
 
@@ -161,6 +169,25 @@ export default function EvaluacionRunner({
         </p>
       </div>
 
+      {resumenIntentos && (
+        <div className="mb-8 bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 flex flex-wrap gap-x-8 gap-y-2 text-[13px]">
+          <div>
+            <span className="text-gray-500">Intentos previos: </span>
+            <span className="font-medium text-gray-900">{resumenIntentos.cantidad}</span>
+          </div>
+          <div>
+            <span className="text-gray-500">Mejor resultado: </span>
+            <span className="font-medium text-gray-900">{resumenIntentos.mejorPuntaje}%</span>
+          </div>
+          <div>
+            <span className="text-gray-500">Último resultado: </span>
+            <span className="font-medium text-gray-900">
+              {resumenIntentos.ultimoPuntaje}% ({resumenIntentos.ultimoAprobado ? 'aprobado' : 'no aprobado'})
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col gap-6">
         {preguntasIntento.map((pregunta, index) => (
           <div key={pregunta.id} className="border border-gray-200 rounded-xl p-5">
@@ -193,13 +220,14 @@ export default function EvaluacionRunner({
         ))}
       </div>
 
-      <div className="flex justify-end mt-8">
+      <div className="flex flex-col items-end gap-2 mt-8">
+        {errorEnvio && <p className="text-[12px] text-red-600">{errorEnvio}</p>}
         <button
           onClick={handleEnviar}
-          disabled={!todasContestadas}
+          disabled={!todasContestadas || isPending}
           className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-[13px] font-medium px-6 py-2.5 rounded-lg transition-colors"
         >
-          Enviar respuestas
+          {isPending ? 'Enviando…' : 'Enviar respuestas'}
         </button>
       </div>
     </div>

@@ -39,6 +39,37 @@ export function seleccionarAleatorias(preguntas: Pregunta[], cantidad: number): 
   return barajadas.slice(0, Math.min(cantidad, barajadas.length))
 }
 
+export interface IntentoPrevio {
+  puntaje: number
+  aprobado: boolean
+  created_at: string
+}
+
+export interface ResumenIntentos {
+  cantidad: number
+  mejorPuntaje: number
+  ultimoPuntaje: number
+  ultimoAprobado: boolean
+}
+
+// Etapa C del bloque "Persistencia de evaluaciones": resumen mínimo para
+// mostrar antes de un nuevo intento. `null` si el alumno nunca rindió
+// esta evaluación — nada que resumir.
+export function calcularResumenIntentos(intentos: IntentoPrevio[]): ResumenIntentos | null {
+  if (intentos.length === 0) return null
+
+  const ultimo = [...intentos].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )[0]
+
+  return {
+    cantidad: intentos.length,
+    mejorPuntaje: Math.max(...intentos.map((i) => i.puntaje)),
+    ultimoPuntaje: ultimo.puntaje,
+    ultimoAprobado: ultimo.aprobado,
+  }
+}
+
 export function calcularResultado(
   moduloSlug: string,
   preguntasIntento: Pregunta[],
