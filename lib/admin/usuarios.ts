@@ -156,13 +156,13 @@ export async function crearAlumno(input: AltaAlumnoInput): Promise<{ id: string;
     if (updateError) throw updateError
   }
 
-  const link = construirEnlaceActivacion(data.properties.hashed_token)
+  const link = construirEnlaceAuth(data.properties.hashed_token, 'invite')
 
   return { id, link }
 }
 
-function construirEnlaceActivacion(hashedToken: string): string {
-  return `${process.env.SITE_URL!}/auth/confirm?token_hash=${hashedToken}&type=invite&next=/set-password`
+function construirEnlaceAuth(hashedToken: string, type: 'invite' | 'recovery'): string {
+  return `${process.env.SITE_URL!}/auth/confirm?token_hash=${hashedToken}&type=${type}&next=/set-password`
 }
 
 // "Generar nuevo enlace" — para un alumno ya creado cuyo link anterior
@@ -201,7 +201,56 @@ export async function regenerarEnlaceInvitacion(userId: string): Promise<{ link:
 
   if (error) throw error
 
-  return { link: construirEnlaceActivacion(data.properties.hashed_token) }
+  return { link: construirEnlaceAuth(data.properties.hashed_token, 'invite') }
+}
+
+// "Generar enlace de recuperación" — para un alumno que ya activó su
+// cuenta (a diferencia de regenerarEnlaceInvitacion, que es lo opuesto:
+// solo para pendientes) y perdió su contraseña. Mismo mecanismo
+// token_hash+verifyOtp, mismo /auth/confirm, mismo /set-password —
+// verifyOtp('recovery') resuelve el token exclusivamente contra el
+// dueño del token, nunca contra la sesión que hubiera en el navegador
+// que lo abra, así que no hay forma de que esto afecte a otra cuenta.
+// Chequea `rol='alumno'` explícitamente contra `profiles` (no alcanza
+// con que el email esté confirmado — un admin también lo está) — nunca
+// se genera un link de recuperación para un admin desde acá.
+export async function generarEnlaceRecuperacion(userId: string): Promise<{ link: string }> {
+  const admin = createAdminClient()
+
+  const { data: profile, error: profileError } = await admin
+    .from('profiles')
+    .select('rol')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (profileError || !profile || (profile as Pick<Profile, 'rol'>).rol !== 'alumno') {
+    throw new Error('Solo se puede generar un enlace de recuperación para un alumno.')
+  }
+
+  const { data: userData, error: userError } = await admin.auth.admin.getUserById(userId)
+  if (userError || !userData.user) {
+    throw userError ?? new Error('Usuario no encontrado.')
+  }
+
+  const { user } = userData
+  if (!user.email) {
+    throw new Error('El usuario no tiene un email asociado.')
+  }
+  if (!user.email_confirmed_at) {
+    throw new Error('Este alumno todavía no activó su cuenta — usá "Generar nuevo enlace" para reenviar la invitación.')
+  }
+
+  const redirectTo = `${process.env.SITE_URL!}/auth/confirm`
+
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: 'recovery',
+    email: user.email,
+    options: { redirectTo },
+  })
+
+  if (error) throw error
+
+  return { link: construirEnlaceAuth(data.properties.hashed_token, 'recovery') }
 }
 
 // Trae un único alumno para la pantalla de edición. Si el id no existe

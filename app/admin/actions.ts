@@ -3,7 +3,13 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getProfile, type Profile } from '@/lib/profile'
-import { crearAlumno, regenerarEnlaceInvitacion, actualizarAlumno, eliminarAlumno } from '@/lib/admin/usuarios'
+import {
+  crearAlumno,
+  regenerarEnlaceInvitacion,
+  generarEnlaceRecuperacion,
+  actualizarAlumno,
+  eliminarAlumno,
+} from '@/lib/admin/usuarios'
 
 export interface AltaAlumnoState {
   error: string | null
@@ -112,6 +118,30 @@ export async function regenerarEnlace(userId: string): Promise<RegenerarEnlaceSt
       return { error: message, link: null }
     }
     return { error: 'No se pudo generar un nuevo enlace. Intentá de nuevo.', link: null }
+  }
+}
+
+// "Generar enlace de recuperación" para un alumno ya activado que
+// perdió su contraseña. Mutuamente excluyente con regenerarEnlace: esa
+// es para invitaciones pendientes, esta para cuentas ya confirmadas.
+// generarEnlaceRecuperacion() ya re-verifica rol='alumno' server-side;
+// acá solo se re-chequea que quien pide esto sea admin.
+export async function generarEnlaceRecuperacionAction(userId: string): Promise<RegenerarEnlaceState> {
+  const admin = await requerirAdmin()
+  if (!admin) {
+    return { error: 'No autorizado.', link: null }
+  }
+
+  try {
+    const { link } = await generarEnlaceRecuperacion(userId)
+    return { error: null, link }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[generarEnlaceRecuperacionAction] error:', message)
+    if (message.includes('Solo se puede generar') || message.includes('todavía no activó')) {
+      return { error: message, link: null }
+    }
+    return { error: 'No se pudo generar el enlace de recuperación. Intentá de nuevo.', link: null }
   }
 }
 

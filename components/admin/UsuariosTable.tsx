@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { calcularVigencia, type Usuario } from '@/lib/admin/usuarios'
+import { regenerarEnlace } from '@/app/admin/actions'
 import RegenerarEnlaceButton from '@/components/admin/RegenerarEnlaceButton'
 
 function formatFecha(fecha: string | null): string {
@@ -91,7 +92,11 @@ export default function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
               </td>
               <td className="relative z-10 px-4 py-3">
                 {usuario.rol === 'alumno' && !usuario.email_confirmado ? (
-                  <RegenerarEnlaceButton userId={usuario.id} />
+                  <RegenerarEnlaceButton
+                    userId={usuario.id}
+                    accion={regenerarEnlace}
+                    etiqueta="Generar nuevo enlace"
+                  />
                 ) : (
                   <span className="text-gray-300">—</span>
                 )}

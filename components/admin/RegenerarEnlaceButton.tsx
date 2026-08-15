@@ -1,9 +1,24 @@
 'use client'
 
 import { useState } from 'react'
-import { regenerarEnlace } from '@/app/admin/actions'
 
-export default function RegenerarEnlaceButton({ userId }: { userId: string }) {
+type ResultadoEnlace = { error: string | null; link: string | null }
+
+// Genérico: sirve tanto para "Generar nuevo enlace" (invitación
+// pendiente) como para "Generar enlace de recuperación" (alumno ya
+// activado) — misma UI de generar → mostrar una sola vez → copiar,
+// solo cambia qué Server Action se llama y el texto del botón.
+export default function RegenerarEnlaceButton({
+  userId,
+  accion,
+  etiqueta,
+  etiquetaGenerando = 'Generando...',
+}: {
+  userId: string
+  accion: (userId: string) => Promise<ResultadoEnlace>
+  etiqueta: string
+  etiquetaGenerando?: string
+}) {
   const [pending, setPending] = useState(false)
   const [link, setLink] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -12,7 +27,7 @@ export default function RegenerarEnlaceButton({ userId }: { userId: string }) {
   async function generar() {
     setPending(true)
     setError(null)
-    const result = await regenerarEnlace(userId)
+    const result = await accion(userId)
     setPending(false)
 
     if (result.error) {
@@ -59,7 +74,7 @@ export default function RegenerarEnlaceButton({ userId }: { userId: string }) {
         disabled={pending}
         className="text-[11px] text-blue-600 hover:underline disabled:opacity-50 text-left"
       >
-        {pending ? 'Generando...' : 'Generar nuevo enlace'}
+        {pending ? etiquetaGenerando : etiqueta}
       </button>
       {error && <span className="text-[10px] text-red-600">{error}</span>}
     </div>
