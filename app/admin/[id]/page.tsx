@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getProfile } from '@/lib/profile'
 import { obtenerAlumno } from '@/lib/admin/usuarios'
 import EditarAlumnoForm from '@/components/admin/EditarAlumnoForm'
+import EliminarAlumnoButton from '@/components/admin/EliminarAlumnoButton'
 
 // Etapa 3 del Sprint 5.4: edición de alumno. Aplica solo a rol='alumno'
 // — un admin nunca es un resultado válido de obtenerAlumno(), así que
@@ -44,6 +45,11 @@ export default async function EditarAlumnoPage({
         {alumno.nombre} {alumno.apellido}
       </p>
       <EditarAlumnoForm alumno={alumno} />
+
+      <div className="mt-10 pt-6 border-t border-gray-100 max-w-lg">
+        <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-2">Zona de peligro</p>
+        <EliminarAlumnoButton id={alumno.id} nombreCompleto={`${alumno.nombre} ${alumno.apellido}`} />
+      </div>
     </div>
   )
 }

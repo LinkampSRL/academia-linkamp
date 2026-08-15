@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getProfile, type Profile } from '@/lib/profile'
-import { crearAlumno, regenerarEnlaceInvitacion, actualizarAlumno } from '@/lib/admin/usuarios'
+import { crearAlumno, regenerarEnlaceInvitacion, actualizarAlumno, eliminarAlumno } from '@/lib/admin/usuarios'
 
 export interface AltaAlumnoState {
   error: string | null
@@ -16,6 +16,10 @@ export interface RegenerarEnlaceState {
 }
 
 export interface EditarAlumnoState {
+  error: string | null
+}
+
+export interface EliminarAlumnoState {
   error: string | null
 }
 
@@ -155,6 +159,27 @@ export async function actualizarAlumnoAction(
     const message = err instanceof Error ? err.message : String(err)
     console.error('[actualizarAlumnoAction] error:', message)
     return { error: 'No se pudo actualizar el alumno. Intentá de nuevo.' }
+  }
+
+  redirect('/admin')
+}
+
+// Eliminación segura de alumno — nunca disponible para admins. Re-chequea
+// admin y, dentro de eliminarAlumno(), vuelve a verificar rol='alumno'
+// server-side antes de borrar (no confía en que la UI ya lo haya
+// filtrado). El `id` llega del panel; no es un dato sensible en sí mismo.
+export async function eliminarAlumnoAction(id: string): Promise<EliminarAlumnoState> {
+  const admin = await requerirAdmin()
+  if (!admin) {
+    return { error: 'No autorizado.' }
+  }
+
+  try {
+    await eliminarAlumno(id)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[eliminarAlumnoAction] error:', message)
+    return { error: 'No se pudo eliminar el alumno. Intentá de nuevo.' }
   }
 
   redirect('/admin')

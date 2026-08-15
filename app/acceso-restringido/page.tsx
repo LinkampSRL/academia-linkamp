@@ -7,6 +7,10 @@ const MOTIVOS: Record<string, { titulo: string; mensaje: string }> = {
     titulo: 'Acceso vencido',
     mensaje: 'Tu acceso al curso venció. Contactá a Linkamp Precisión para renovarlo.',
   },
+  no_iniciado: {
+    titulo: 'Acceso aún no habilitado',
+    mensaje: 'Tu acceso al curso todavía no comenzó. Contactá a Linkamp Precisión para más información.',
+  },
   sin_perfil: {
     titulo: 'Perfil no encontrado',
     mensaje: 'No encontramos un perfil asociado a tu cuenta. Contactá a Linkamp Precisión.',

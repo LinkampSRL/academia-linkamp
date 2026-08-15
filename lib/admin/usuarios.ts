@@ -262,6 +262,23 @@ export async function actualizarAlumno(id: string, input: EditarAlumnoInput): Pr
   }
 }
 
+// Eliminación segura: relee el rol server-side (nunca confía en que el
+// llamador ya lo haya verificado) y rechaza explícitamente si no es
+// 'alumno' — un admin nunca puede ser borrado por este camino, ni
+// siquiera por error. `profiles` se borra solo por el `on delete
+// cascade` ya existente en la FK hacia auth.users.
+export async function eliminarAlumno(id: string): Promise<void> {
+  const admin = createAdminClient()
+
+  const { data: profile, error } = await admin.from('profiles').select('rol').eq('id', id).maybeSingle()
+  if (error || !profile || (profile as Pick<Profile, 'rol'>).rol !== 'alumno') {
+    throw new Error('No se encontró un alumno con ese id para eliminar.')
+  }
+
+  const { error: deleteError } = await admin.auth.admin.deleteUser(id)
+  if (deleteError) throw deleteError
+}
+
 export const USUARIOS_POR_PAGINA = 20
 
 export function paginarUsuarios(usuarios: Usuario[], pagina: number) {

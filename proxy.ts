@@ -2,12 +2,13 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { getProfile } from '@/lib/profile'
 
-// Sprint 5.3: además de "¿hay sesión?", resuelve autorización según
-// `profiles`: admin siempre pasa; alumno requiere estar activo y vigente;
-// /admin es exclusivo de admin; sin fila de profile, acceso denegado.
-// /acceso-restringido, /login y /auth/* quedan fuera del `matcher` a
-// propósito — el proxy nunca corre ahí, así que ningún destino de
-// redirect puede generar un loop.
+// Sprint 5.3 (+ Sprint 5.4 Etapa 4A): además de "¿hay sesión?", resuelve
+// autorización según `profiles`: admin siempre pasa; alumno requiere
+// estar activo, con fecha_inicio ya alcanzada y fecha_vencimiento no
+// vencida; /admin es exclusivo de admin; sin fila de profile, acceso
+// denegado. /acceso-restringido, /login y /auth/* quedan fuera del
+// `matcher` a propósito — el proxy nunca corre ahí, así que ningún
+// destino de redirect puede generar un loop.
 function accesoRestringido(request: NextRequest, motivo: string) {
   const url = new URL('/acceso-restringido', request.url)
   url.searchParams.set('motivo', motivo)
@@ -61,6 +62,10 @@ export async function proxy(request: NextRequest) {
 
   if (!profile.activo) {
     return accesoRestringido(request, 'desactivado')
+  }
+
+  if (profile.fecha_inicio && new Date(profile.fecha_inicio).getTime() > Date.now()) {
+    return accesoRestringido(request, 'no_iniciado')
   }
 
   if (profile.fecha_vencimiento && new Date(profile.fecha_vencimiento).getTime() < Date.now()) {
