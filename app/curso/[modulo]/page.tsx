@@ -2,7 +2,10 @@ import type { Metadata } from 'next'
 import { getCourse } from '@/lib/course'
 import { getModuleContent, getModuleSections } from '@/lib/content'
 import { tienePreguntas } from '@/lib/preguntas'
+import { createClient } from '@/lib/supabase/server'
 import ModuleContent from '@/components/ModuleContent'
+import RegistrarVisitaModulo from '@/components/RegistrarVisitaModulo'
+import BotonCompletarModulo from '@/components/BotonCompletarModulo'
 import Link from 'next/link'
 
 export async function generateStaticParams() {
@@ -42,8 +45,25 @@ export default async function ModulePage({
 
   if (!moduloData) return <div className="p-10 text-gray-400">Módulo no encontrado.</div>
 
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  let completadoInicial = false
+  if (user) {
+    const { data: progreso } = await supabase
+      .from('progreso_modulos')
+      .select('completado')
+      .eq('alumno_id', user.id)
+      .eq('modulo_slug', slug)
+      .maybeSingle()
+    completadoInicial = progreso?.completado ?? false
+  }
+
   return (
     <div className="max-w-[820px] mx-auto px-6 py-12">
+      <RegistrarVisitaModulo slug={slug} />
 
       {/* Badge + título */}
       <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 text-[11px] font-medium px-3 py-1 rounded-full border border-blue-100 mb-4">
@@ -100,6 +120,8 @@ export default async function ModulePage({
           </Link>
         </div>
       )}
+
+      <BotonCompletarModulo slug={slug} completadoInicial={completadoInicial} />
 
       {/* Navegación anterior / siguiente */}
       <div className="flex items-start justify-between mt-16 pt-8 border-t border-gray-100">

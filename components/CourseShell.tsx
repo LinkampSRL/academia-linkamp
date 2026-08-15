@@ -19,6 +19,7 @@ export default function CourseShell({ course, sectionsMap, children }: CourseShe
     <>
       <Topbar
         onMenuToggle={() => setMobileOpen((o) => !o)}
+        showDashboardLink
       />
       <div className="flex flex-1 overflow-hidden relative">
         <Sidebar

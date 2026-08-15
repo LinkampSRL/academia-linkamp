@@ -3,6 +3,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getProfile } from '@/lib/profile'
 import { getCourse } from '@/lib/course'
+import {
+  calcularEstadoModulo,
+  calcularProgresoGeneral,
+  obtenerUltimoModuloVisitado,
+  type EstadoModulo,
+  type ProgresoModulo,
+} from '@/lib/progreso'
 import Topbar from '@/components/Topbar'
 
 function formatFecha(fecha: string | null): string {
@@ -10,12 +17,15 @@ function formatFecha(fecha: string | null): string {
   return `Vence el ${new Date(fecha).toLocaleDateString('es-AR')}`
 }
 
-// Etapa C del bloque "Dashboard del alumno": grid de módulos + CTA de
-// inicio. Deliberadamente sin porcentajes ni estado de progreso — no
-// existe persistencia real todavía, y mostrar un dato inventado sería
-// engañoso. "Comenzar curso" siempre apunta al módulo 1 por ahora; el
-// día que exista progreso real, se reemplaza por "Continuar curso"
-// apuntando al último punto real del alumno.
+const ESTADO_BADGE: Record<EstadoModulo, { label: string; className: string }> = {
+  por_empezar: { label: 'Por empezar', className: 'bg-gray-100 text-gray-500' },
+  en_curso: { label: 'En curso', className: 'bg-blue-50 text-blue-600' },
+  completado: { label: '✓ Completado', className: 'bg-green-50 text-green-600' },
+}
+
+// Bloque "Dashboard del alumno" — Etapa D: progreso real a partir de
+// progreso_modulos. Estados, contador y CTA salen de lib/progreso.ts
+// (lógica pura), acotados siempre a los slugs reales de curso.json.
 export default async function DashboardPage() {
   const supabase = await createClient()
   const {
@@ -30,6 +40,19 @@ export default async function DashboardPage() {
 
   const course = getCourse()
 
+  const { data: progresoRows } = await supabase
+    .from('progreso_modulos')
+    .select('modulo_slug, visitado_at, completado')
+    .eq('alumno_id', profile.id)
+
+  const progreso: ProgresoModulo[] = progresoRows ?? []
+
+  const { completados, total, porcentaje } = calcularProgresoGeneral(course.modulos, progreso)
+  const ultimoModuloSlug = obtenerUltimoModuloVisitado(course.modulos, progreso)
+  const cta = ultimoModuloSlug
+    ? { label: 'Continuar curso', href: `/curso/${ultimoModuloSlug}` }
+    : { label: 'Comenzar curso', href: '/curso/01-introduccion' }
+
   return (
     <div>
       <Topbar />
@@ -39,21 +62,36 @@ export default async function DashboardPage() {
           {profile.empresa && <p className="text-[13px] text-gray-500">{profile.empresa}</p>}
         </div>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex flex-col gap-2 max-w-sm">
-          <div className="flex items-center gap-2">
-            <span className={`w-1.5 h-1.5 rounded-full ${profile.activo ? 'bg-green-500' : 'bg-gray-300'}`} />
-            <span className="text-[13px] font-medium text-gray-900">
-              {profile.activo ? 'Acceso activo' : 'Cuenta desactivada'}
-            </span>
+        <div className="flex flex-wrap gap-4">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex flex-col gap-2 max-w-sm flex-1 min-w-[220px]">
+            <div className="flex items-center gap-2">
+              <span className={`w-1.5 h-1.5 rounded-full ${profile.activo ? 'bg-green-500' : 'bg-gray-300'}`} />
+              <span className="text-[13px] font-medium text-gray-900">
+                {profile.activo ? 'Acceso activo' : 'Cuenta desactivada'}
+              </span>
+            </div>
+            <p className="text-[12px] text-gray-500">{formatFecha(profile.fecha_vencimiento)}</p>
           </div>
-          <p className="text-[12px] text-gray-500">{formatFecha(profile.fecha_vencimiento)}</p>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex flex-col gap-2 max-w-sm flex-1 min-w-[220px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[13px] font-medium text-gray-900">Progreso general</span>
+              <span className="text-[12px] text-gray-500">
+                {completados} de {total} módulos
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-gray-200 overflow-hidden">
+              <div className="h-full bg-blue-600 rounded-full" style={{ width: `${porcentaje}%` }} />
+            </div>
+            <p className="text-[12px] text-gray-500">{porcentaje}% completado</p>
+          </div>
         </div>
 
         <Link
-          href="/curso/01-introduccion"
+          href={cta.href}
           className="inline-flex items-center gap-2 mt-6 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium px-5 py-2.5 rounded-lg transition-colors"
         >
-          Comenzar curso
+          {cta.label}
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
@@ -62,19 +100,28 @@ export default async function DashboardPage() {
         <h2 className="text-[13px] font-medium text-gray-900 mt-12 mb-4">Módulos del curso</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {course.modulos.map((modulo) => (
-            <Link
-              key={modulo.slug}
-              href={`/curso/${modulo.slug}`}
-              className="group flex flex-col gap-2 p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all bg-white"
-            >
-              <div className="w-7 h-7 rounded-md bg-gray-100 text-gray-500 flex items-center justify-center text-[11px] font-medium">
-                {modulo.orden}
-              </div>
-              <p className="text-[13px] font-medium text-gray-900 leading-snug flex-1">{modulo.titulo}</p>
-              <span className="text-[11px] text-blue-600 group-hover:underline">Ver módulo →</span>
-            </Link>
-          ))}
+          {course.modulos.map((modulo) => {
+            const estado = calcularEstadoModulo(modulo, progreso)
+            const badge = ESTADO_BADGE[estado]
+            return (
+              <Link
+                key={modulo.slug}
+                href={`/curso/${modulo.slug}`}
+                className="group flex flex-col gap-2 p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all bg-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-7 h-7 rounded-md bg-gray-100 text-gray-500 flex items-center justify-center text-[11px] font-medium">
+                    {modulo.orden}
+                  </div>
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${badge.className}`}>
+                    {badge.label}
+                  </span>
+                </div>
+                <p className="text-[13px] font-medium text-gray-900 leading-snug flex-1">{modulo.titulo}</p>
+                <span className="text-[11px] text-blue-600 group-hover:underline">Ver módulo →</span>
+              </Link>
+            )
+          })}
         </div>
       </main>
     </div>

@@ -1,8 +1,11 @@
+import Link from 'next/link'
+
 interface TopbarProps {
   onMenuToggle?: () => void
+  showDashboardLink?: boolean
 }
 
-export default function Topbar({ onMenuToggle }: TopbarProps) {
+export default function Topbar({ onMenuToggle, showDashboardLink }: TopbarProps) {
   return (
     <header className="flex items-center h-14 flex-shrink-0 bg-[#0F172A] border-b border-white/5">
       {/* Botón hamburguesa — solo visible en mobile */}
@@ -30,7 +33,15 @@ export default function Topbar({ onMenuToggle }: TopbarProps) {
         </span>
       </div>
 
-      <div className="flex-1 flex items-center justify-end px-5">
+      <div className="flex-1 flex items-center justify-end px-5 gap-5">
+        {showDashboardLink && (
+          <Link
+            href="/dashboard"
+            className="text-white/60 hover:text-white text-[12px] font-medium transition-colors"
+          >
+            ← Dashboard
+          </Link>
+        )}
         <form action="/auth/logout" method="post">
           <button
             type="submit"
