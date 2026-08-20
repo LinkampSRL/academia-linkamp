@@ -10,6 +10,11 @@ import {
   type EstadoModulo,
   type ProgresoModulo,
 } from '@/lib/progreso'
+import {
+  calcularFinalizacion,
+  type ProgresoModuloFinalizacion,
+  type IntentoFinalizacion,
+} from '@/lib/finalizacion'
 import Topbar from '@/components/Topbar'
 
 function formatFecha(fecha: string | null): string {
@@ -42,16 +47,25 @@ export default async function DashboardPage() {
 
   const { data: progresoRows } = await supabase
     .from('progreso_modulos')
-    .select('modulo_slug, visitado_at, completado')
+    .select('modulo_slug, visitado_at, completado, completado_at')
+    .eq('alumno_id', profile.id)
+
+  const { data: intentosRows } = await supabase
+    .from('intentos_evaluacion')
+    .select('modulo_slug, aprobado, created_at')
     .eq('alumno_id', profile.id)
 
   const progreso: ProgresoModulo[] = progresoRows ?? []
+  const progresoFinalizacion: ProgresoModuloFinalizacion[] = progresoRows ?? []
+  const intentos: IntentoFinalizacion[] = intentosRows ?? []
 
   const { completados, total, porcentaje } = calcularProgresoGeneral(course.modulos, progreso)
   const ultimoModuloSlug = obtenerUltimoModuloVisitado(course.modulos, progreso)
   const cta = ultimoModuloSlug
     ? { label: 'Continuar curso', href: `/curso/${ultimoModuloSlug}` }
     : { label: 'Comenzar curso', href: '/curso/01-introduccion' }
+
+  const estadoFinalizacion = calcularFinalizacion(course.modulos, progresoFinalizacion, intentos)
 
   return (
     <div>
@@ -84,18 +98,31 @@ export default async function DashboardPage() {
               <div className="h-full bg-blue-600 rounded-full" style={{ width: `${porcentaje}%` }} />
             </div>
             <p className="text-[12px] text-gray-500">{porcentaje}% completado</p>
+            <p className="text-[12px] text-gray-500">
+              {estadoFinalizacion.evaluaciones.aprobadas} de {estadoFinalizacion.evaluaciones.total} evaluaciones
+              aprobadas
+            </p>
           </div>
         </div>
 
-        <Link
-          href={cta.href}
-          className="inline-flex items-center gap-2 mt-6 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium px-5 py-2.5 rounded-lg transition-colors"
-        >
-          {cta.label}
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
+        {estadoFinalizacion.finalizado && estadoFinalizacion.fechaFinalizacion ? (
+          <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-5 flex flex-col gap-1">
+            <p className="text-[14px] font-medium text-green-800">🎉 ¡Felicitaciones! Completaste el curso.</p>
+            <p className="text-[12px] text-green-700">
+              Finalizado el {new Date(estadoFinalizacion.fechaFinalizacion).toLocaleDateString('es-AR')}
+            </p>
+          </div>
+        ) : (
+          <Link
+            href={cta.href}
+            className="inline-flex items-center gap-2 mt-6 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium px-5 py-2.5 rounded-lg transition-colors"
+          >
+            {cta.label}
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        )}
 
         <h2 className="text-[13px] font-medium text-gray-900 mt-12 mb-4">Módulos del curso</h2>
 
