@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getCourse } from '@/lib/course'
 import { getPreguntas, tienePreguntas } from '@/lib/preguntas'
-import { calcularResumenIntentos } from '@/lib/evaluacion'
+import { calcularResumenIntentos, ocultarRespuestas, seleccionarAleatorias } from '@/lib/evaluacion'
 import { createClient } from '@/lib/supabase/server'
 import EvaluacionRunner from '@/components/EvaluacionRunner'
 
@@ -46,6 +46,12 @@ export default async function EvaluacionPage({
   }
 
   const banco = getPreguntas(slug)
+  // Selección server-side: el Client Component nunca recibe el banco
+  // completo ni `respuesta_correcta` — solo esta vista pública ya recortada
+  // y con el orden de opciones barajado para este intento.
+  const preguntasIniciales = ocultarRespuestas(
+    seleccionarAleatorias(banco.preguntas, banco.preguntas_por_intento)
+  )
 
   const supabase = await createClient()
   const {
@@ -66,7 +72,8 @@ export default async function EvaluacionPage({
   return (
     <div className="max-w-[820px] mx-auto px-6 py-12">
       <EvaluacionRunner
-        banco={banco}
+        preguntasIniciales={preguntasIniciales}
+        notaMinima={banco.nota_minima_aprobacion}
         moduloSlug={slug}
         moduloOrden={moduloData.orden}
         moduloTitulo={moduloData.titulo}

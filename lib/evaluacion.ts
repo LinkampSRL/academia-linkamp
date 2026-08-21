@@ -16,27 +16,51 @@ export interface BancoPreguntas {
   preguntas: Pregunta[]
 }
 
+// Vista pública de una pregunta — sin `respuesta_correcta`, con `opciones` ya
+// barajadas para este intento. Es lo único que puede cruzar al navegador.
+export interface PreguntaPublica {
+  id: string
+  enunciado: string
+  opciones: string[]
+}
+
+// El cliente nunca conoce el índice "correcto" de nada (ni el original ni el
+// de su propio orden barajado), así que identifica su respuesta por el texto
+// literal de la opción elegida. La corrección server-side compara ese texto
+// contra `opciones[respuesta_correcta]` del banco real — ver
+// registrarIntentoEvaluacion en app/curso/actions.ts.
 export interface Respuesta {
   preguntaId: string
-  opcionSeleccionada: number
+  opcionSeleccionada: string
 }
 
-export interface Resultado {
-  moduloSlug: string
-  preguntasIds: string[]
-  respuestas: Respuesta[]
-  puntaje: number
-  aprobado: boolean
-}
-
-// Fisher-Yates: selecciona N preguntas al azar del banco, sin repetir dentro del mismo intento.
-export function seleccionarAleatorias(preguntas: Pregunta[], cantidad: number): Pregunta[] {
-  const barajadas = [...preguntas]
-  for (let i = barajadas.length - 1; i > 0; i--) {
+// Fisher-Yates genérico, reutilizado tanto para elegir qué preguntas entran
+// al intento como para barajar el orden de las opciones de cada una.
+function barajar<T>(items: T[]): T[] {
+  const copia = [...items]
+  for (let i = copia.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[barajadas[i], barajadas[j]] = [barajadas[j], barajadas[i]]
+    ;[copia[i], copia[j]] = [copia[j], copia[i]]
   }
-  return barajadas.slice(0, Math.min(cantidad, barajadas.length))
+  return copia
+}
+
+// Selecciona N preguntas al azar del banco, sin repetir dentro del mismo intento.
+export function seleccionarAleatorias(preguntas: Pregunta[], cantidad: number): Pregunta[] {
+  return barajar(preguntas).slice(0, Math.min(cantidad, preguntas.length))
+}
+
+// Server-only en la práctica (solo se debe llamar donde ya se tiene el banco
+// real): quita `respuesta_correcta` y baraja el orden de `opciones` de cada
+// pregunta antes de que el resultado cruce al Client Component. El mismo
+// barajado se repite en cada intento (incluido "Reintentar"), así que el
+// índice de la opción correcta nunca es estable entre intentos.
+export function ocultarRespuestas(preguntas: Pregunta[]): PreguntaPublica[] {
+  return preguntas.map((pregunta) => ({
+    id: pregunta.id,
+    enunciado: pregunta.enunciado,
+    opciones: barajar(pregunta.opciones),
+  }))
 }
 
 export interface IntentoPrevio {
@@ -67,27 +91,5 @@ export function calcularResumenIntentos(intentos: IntentoPrevio[]): ResumenInten
     mejorPuntaje: Math.max(...intentos.map((i) => i.puntaje)),
     ultimoPuntaje: ultimo.puntaje,
     ultimoAprobado: ultimo.aprobado,
-  }
-}
-
-export function calcularResultado(
-  moduloSlug: string,
-  preguntasIntento: Pregunta[],
-  respuestas: Respuesta[],
-  notaMinima: number
-): Resultado {
-  const correctas = preguntasIntento.filter((pregunta) => {
-    const respuesta = respuestas.find((r) => r.preguntaId === pregunta.id)
-    return respuesta?.opcionSeleccionada === pregunta.respuesta_correcta
-  }).length
-
-  const puntaje = Math.round((correctas / preguntasIntento.length) * 100)
-
-  return {
-    moduloSlug,
-    preguntasIds: preguntasIntento.map((p) => p.id),
-    respuestas,
-    puntaje,
-    aprobado: puntaje >= notaMinima,
   }
 }

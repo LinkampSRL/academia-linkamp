@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCourse } from '@/lib/course'
 import { getPreguntas, tienePreguntas } from '@/lib/preguntas'
-import type { Respuesta } from '@/lib/evaluacion'
+import { ocultarRespuestas, seleccionarAleatorias, type PreguntaPublica, type Respuesta } from '@/lib/evaluacion'
 
 // Registra que el alumno visitó un módulo (Etapa B del bloque "Progreso
 // del alumno"). Nunca toca `completado`: visitar no es completar. El
@@ -55,6 +55,29 @@ export async function marcarModuloCompletado(moduloSlug: string, completado: boo
     },
     { onConflict: 'alumno_id,modulo_slug' }
   )
+}
+
+// Devuelve un nuevo set de preguntas para rendir (carga inicial delegada al
+// Server Component de la página, pero "Reintentar" no tiene banco propio en
+// el cliente para reshufflear localmente — necesita pedirle uno nuevo acá).
+// Server-only: relee el banco real, que nunca sale de este archivo entero
+// (ni `respuesta_correcta` ni las preguntas no seleccionadas). Requiere
+// sesión igual que el resto de las acciones de este archivo, aunque no
+// devuelva ningún dato personal — política consistente de "alumno
+// autenticado con acceso al curso", no por sensibilidad del contenido en sí.
+export async function obtenerNuevoIntento(moduloSlug: string): Promise<PreguntaPublica[]> {
+  const course = getCourse()
+  if (!course.modulos.some((m) => m.slug === moduloSlug)) return []
+  if (!tienePreguntas(moduloSlug)) return []
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const banco = getPreguntas(moduloSlug)
+  return ocultarRespuestas(seleccionarAleatorias(banco.preguntas, banco.preguntas_por_intento))
 }
 
 export interface ResultadoIntento {
@@ -114,10 +137,22 @@ export async function registrarIntentoEvaluacion(
     }
   }
 
+  // El cliente identifica su respuesta por el texto de la opción (nunca por
+  // índice: el orden que vio estaba barajado y el servidor no lo recuerda ni
+  // lo necesita). Validar que ese texto sea realmente una de las opciones
+  // reales de esa pregunta antes de compararlo contra la correcta.
+  for (const r of respuestas) {
+    const pregunta = preguntasPorId.get(r.preguntaId)!
+    if (!pregunta.opciones.includes(r.opcionSeleccionada)) {
+      return { ok: false, error: 'El intento incluye una opción que no pertenece a la pregunta.' }
+    }
+  }
+
   const cantidadPreguntas = respuestas.length
-  const cantidadCorrectas = respuestas.filter(
-    (r) => preguntasPorId.get(r.preguntaId)!.respuesta_correcta === r.opcionSeleccionada
-  ).length
+  const cantidadCorrectas = respuestas.filter((r) => {
+    const pregunta = preguntasPorId.get(r.preguntaId)!
+    return pregunta.opciones[pregunta.respuesta_correcta] === r.opcionSeleccionada
+  }).length
   const puntaje = Math.round((cantidadCorrectas / cantidadPreguntas) * 100)
   const aprobado = puntaje >= banco.nota_minima_aprobacion
 

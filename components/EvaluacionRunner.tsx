@@ -2,17 +2,17 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import {
-  seleccionarAleatorias,
-  type BancoPreguntas,
-  type Respuesta,
-  type ResumenIntentos,
-} from '@/lib/evaluacion'
+import type { PreguntaPublica, Respuesta, ResumenIntentos } from '@/lib/evaluacion'
 import type { Modulo } from '@/lib/course'
-import { registrarIntentoEvaluacion, type ResultadoIntento } from '@/app/curso/actions'
+import {
+  obtenerNuevoIntento,
+  registrarIntentoEvaluacion,
+  type ResultadoIntento,
+} from '@/app/curso/actions'
 
 interface EvaluacionRunnerProps {
-  banco: BancoPreguntas
+  preguntasIniciales: PreguntaPublica[]
+  notaMinima: number
   moduloSlug: string
   moduloOrden: number
   moduloTitulo: string
@@ -23,17 +23,19 @@ interface EvaluacionRunnerProps {
 type Fase = 'en-progreso' | 'resultado'
 
 export default function EvaluacionRunner({
-  banco,
+  preguntasIniciales,
+  notaMinima,
   moduloSlug,
   moduloOrden,
   moduloTitulo,
   modulos,
   resumenIntentos,
 }: EvaluacionRunnerProps) {
-  const [preguntasIntento, setPreguntasIntento] = useState(() =>
-    seleccionarAleatorias(banco.preguntas, banco.preguntas_por_intento)
-  )
-  const [respuestas, setRespuestas] = useState<Record<string, number>>({})
+  const [preguntasIntento, setPreguntasIntento] = useState(preguntasIniciales)
+  // El valor guardado por pregunta es el texto de la opción elegida, nunca un
+  // índice — el orden que ve el alumno está barajado por intento y no hay
+  // ningún índice "correcto" estable del que depender en el cliente.
+  const [respuestas, setRespuestas] = useState<Record<string, string>>({})
   const [fase, setFase] = useState<Fase>('en-progreso')
   const [resultado, setResultado] = useState<ResultadoIntento | null>(null)
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null)
@@ -41,8 +43,8 @@ export default function EvaluacionRunner({
 
   const todasContestadas = preguntasIntento.every((p) => respuestas[p.id] !== undefined)
 
-  function handleSeleccionar(preguntaId: string, opcionIndex: number) {
-    setRespuestas((prev) => ({ ...prev, [preguntaId]: opcionIndex }))
+  function handleSeleccionar(preguntaId: string, opcionTexto: string) {
+    setRespuestas((prev) => ({ ...prev, [preguntaId]: opcionTexto }))
   }
 
   function handleEnviar() {
@@ -63,12 +65,18 @@ export default function EvaluacionRunner({
     })
   }
 
+  // Sin banco propio en el cliente para reshufflear localmente: reintentar
+  // le pide al servidor un set nuevo (preguntas + orden de opciones), igual
+  // de server-side que la carga inicial.
   function handleReintentar() {
-    setPreguntasIntento(seleccionarAleatorias(banco.preguntas, banco.preguntas_por_intento))
-    setRespuestas({})
-    setResultado(null)
     setErrorEnvio(null)
-    setFase('en-progreso')
+    startTransition(async () => {
+      const nuevoIntento = await obtenerNuevoIntento(moduloSlug)
+      setPreguntasIntento(nuevoIntento)
+      setRespuestas({})
+      setResultado(null)
+      setFase('en-progreso')
+    })
   }
 
   const moduloLabel = `Módulo ${String(moduloOrden).padStart(2, '0')}`
@@ -136,9 +144,10 @@ export default function EvaluacionRunner({
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <button
             onClick={handleReintentar}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium px-5 py-2.5 rounded-lg transition-colors"
+            disabled={isPending}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-[13px] font-medium px-5 py-2.5 rounded-lg transition-colors"
           >
-            Reintentar
+            {isPending ? 'Cargando…' : 'Reintentar'}
           </button>
           <Link
             href={`/curso/${moduloSlug}`}
@@ -165,7 +174,7 @@ export default function EvaluacionRunner({
         </p>
         <h1 className="text-[22px] font-medium text-gray-900">{moduloTitulo}</h1>
         <p className="text-[13px] text-gray-500 mt-1">
-          Respondé las {preguntasIntento.length} preguntas. Necesitás {banco.nota_minima_aprobacion}% para aprobar.
+          Respondé las {preguntasIntento.length} preguntas. Necesitás {notaMinima}% para aprobar.
         </p>
       </div>
 
@@ -200,7 +209,7 @@ export default function EvaluacionRunner({
                   key={opcionIndex}
                   className={[
                     'flex items-center gap-3 px-3 py-2.5 rounded-lg border text-[13px] cursor-pointer transition-colors',
-                    respuestas[pregunta.id] === opcionIndex
+                    respuestas[pregunta.id] === opcion
                       ? 'border-blue-500 bg-blue-50/50 text-gray-900'
                       : 'border-gray-200 text-gray-600 hover:border-gray-300',
                   ].join(' ')}
@@ -208,8 +217,8 @@ export default function EvaluacionRunner({
                   <input
                     type="radio"
                     name={pregunta.id}
-                    checked={respuestas[pregunta.id] === opcionIndex}
-                    onChange={() => handleSeleccionar(pregunta.id, opcionIndex)}
+                    checked={respuestas[pregunta.id] === opcion}
+                    onChange={() => handleSeleccionar(pregunta.id, opcion)}
                     className="accent-blue-600"
                   />
                   {opcion}
