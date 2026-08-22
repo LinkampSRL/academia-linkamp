@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
+import QRCode from 'qrcode'
 import { createClient } from '@/lib/supabase/server'
 import { getProfile } from '@/lib/profile'
 import { getCourse } from '@/lib/course'
@@ -46,7 +47,22 @@ export async function GET() {
 
   const certificado = certificadoRow as unknown as Certificado
 
-  const buffer = await renderToBuffer(<CertificadoPDF certificado={certificado} logoSrc={LOGO_BUFFER} />)
+  // URL pública de verificación (Etapa 6): SITE_URL es la única fuente para
+  // el dominio — nunca headers de la request, mismo criterio ya usado en
+  // lib/admin/usuarios.ts para los enlaces de invitación. margin:4 = zona
+  // de silencio estándar del QR (necesaria para que escanee bien), width:300
+  // = resolución de impresión razonable aunque en el PDF se muestre chico
+  // (56pt).
+  const urlPublica = `${process.env.SITE_URL!}/certificados/${certificado.id}`
+  const qrBuffer = await QRCode.toBuffer(urlPublica, {
+    width: 300,
+    margin: 4,
+    errorCorrectionLevel: 'M',
+  })
+
+  const buffer = await renderToBuffer(
+    <CertificadoPDF certificado={certificado} logoSrc={LOGO_BUFFER} qrSrc={qrBuffer} />
+  )
 
   return new NextResponse(new Uint8Array(buffer), {
     status: 200,

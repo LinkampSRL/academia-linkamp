@@ -7,6 +7,9 @@ interface CertificadoPDFProps {
   // un `src` string vía fetch() (red), lo que falla en silencio para una
   // ruta local de archivo. Con { data, format } no depende de red.
   logoSrc: Buffer
+  // PNG del QR (Etapa 6), ya generado server-side apuntando a la URL
+  // pública de verificación — mismo patrón { data, format } que el logo.
+  qrSrc: Buffer
 }
 
 // Genera el PDF exclusivamente a partir de la fila ya emitida de
@@ -160,14 +163,29 @@ const styles = StyleSheet.create({
     color: GRIS,
     textAlign: 'center',
   },
+  // Fila discreta al pie: QR + N.º de certificado, sin tocar nada del resto
+  // del diseño ya aprobado (logo, marca de agua, nombre, texto, leyenda).
+  piePagina: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+  },
+  // ~56pt (~1,97cm) — suficiente para una lectura confiable de un QR con
+  // el largo típico de la URL de verificación, sin volverse protagonista
+  // visual frente al resto del certificado.
+  qr: {
+    width: 56,
+    height: 56,
+  },
   uuid: {
     fontSize: 7,
     color: GRIS_CLARO,
-    marginTop: 10,
   },
 })
 
-export default function CertificadoPDF({ certificado, logoSrc }: CertificadoPDFProps) {
+export default function CertificadoPDF({ certificado, logoSrc, qrSrc }: CertificadoPDFProps) {
   return (
     <Document>
       <Page size="A4" orientation="landscape" style={styles.page}>
@@ -175,7 +193,17 @@ export default function CertificadoPDF({ certificado, logoSrc }: CertificadoPDFP
           <Text style={styles.marcaAguaTexto}>LINKAMP</Text>
         </View>
 
-        <View style={styles.marco}>
+        {/* wrap={false}: bug real de @react-pdf/renderer encontrado al agregar
+            el QR (Etapa 6) — con un segundo elemento gráfico (Image o Svg,
+            probado ambos) en el documento, el cálculo interno de paginación
+            generaba una página 2 en blanco aunque todo el contenido entrara
+            perfectamente en la página 1 (confirmado visualmente). No es un
+            problema de tamaño ni de margen: hasta un Image de 0px lo
+            reproducía. wrap={false} le dice a la librería que este bloque
+            nunca se parte entre páginas, y evita el cálculo que dispara el
+            bug. Sin efecto visual — certificado-pdf.tsx no cambió en nada
+            más. */}
+        <View style={styles.marco} wrap={false}>
           {/* eslint-disable-next-line jsx-a11y/alt-text -- Image acá es el componente de @react-pdf/renderer (renderiza a PDF), no un <img> HTML; no tiene prop alt. */}
           <Image src={{ data: logoSrc, format: 'png' }} style={styles.logo} />
 
@@ -217,7 +245,11 @@ export default function CertificadoPDF({ certificado, logoSrc }: CertificadoPDFP
                 profesional.
               </Text>
             </View>
-            <Text style={styles.uuid}>Certificado N.º {certificado.id}</Text>
+            <View style={styles.piePagina}>
+              {/* eslint-disable-next-line jsx-a11y/alt-text -- Image acá es el componente de @react-pdf/renderer (renderiza a PDF), no un <img> HTML; no tiene prop alt. */}
+              <Image src={{ data: qrSrc, format: 'png' }} style={styles.qr} />
+              <Text style={styles.uuid}>Certificado N.º {certificado.id}</Text>
+            </View>
           </View>
         </View>
       </Page>

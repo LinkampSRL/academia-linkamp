@@ -58,3 +58,13 @@ export interface Certificado {
 
 export const CERTIFICADO_COLUMNAS =
   'id, curso_slug, curso_titulo, curso_version, carga_horaria_horas, nombre_completo, emisor, fecha_finalizacion, fecha_emision'
+
+// Valida el formato de `codigo` (la URL pública de verificación, Etapa 6)
+// antes de golpear la base — nunca `select *`, nunca alumno_id, `Certificado`
+// ya excluye ese campo por diseño (no está en CERTIFICADO_COLUMNAS), así que
+// la misma forma sirve para el dashboard y para la página pública.
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export function esUuidValido(codigo: string): boolean {
+  return UUID_REGEX.test(codigo)
+}
