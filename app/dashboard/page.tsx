@@ -15,7 +15,9 @@ import {
   type ProgresoModuloFinalizacion,
   type IntentoFinalizacion,
 } from '@/lib/finalizacion'
+import { CERTIFICADO_COLUMNAS, type Certificado } from '@/lib/certificado'
 import Topbar from '@/components/Topbar'
+import CertificadoEstado from '@/components/CertificadoEstado'
 
 function formatFecha(fecha: string | null): string {
   if (!fecha) return 'Sin fecha de vencimiento'
@@ -66,6 +68,18 @@ export default async function DashboardPage() {
     : { label: 'Comenzar curso', href: '/curso/01-introduccion' }
 
   const estadoFinalizacion = calcularFinalizacion(course.modulos, progresoFinalizacion, intentos)
+
+  // Corre siempre, sin condicionarla a `finalizado`: un certificado ya
+  // emitido se sigue mostrando aunque el alumno deje de cumplir los
+  // requisitos actuales (ver app/dashboard/certificado/actions.ts).
+  const { data: certificadoRow } = await supabase
+    .from('certificados_emitidos')
+    .select(CERTIFICADO_COLUMNAS)
+    .eq('alumno_id', profile.id)
+    .eq('curso_slug', course.slug)
+    .maybeSingle()
+
+  const certificado = certificadoRow as unknown as Certificado | null
 
   return (
     <div>
@@ -123,6 +137,8 @@ export default async function DashboardPage() {
             </svg>
           </Link>
         )}
+
+        <CertificadoEstado finalizado={estadoFinalizacion.finalizado} certificadoInicial={certificado} />
 
         <h2 className="text-[13px] font-medium text-gray-900 mt-12 mb-4">Módulos del curso</h2>
 

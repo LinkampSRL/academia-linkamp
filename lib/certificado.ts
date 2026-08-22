@@ -36,3 +36,25 @@ export function construirSnapshotCertificado(
     fecha_finalizacion: fechaFinalizacion,
   }
 }
+
+// Forma de un certificado ya emitido, tal como se lee de vuelta de
+// `certificados_emitidos`. Vive acá (no en app/dashboard/certificado/
+// actions.ts) porque ese archivo es 'use server' — solo puede exportar
+// funciones async, no tipos con valor en runtime como CERTIFICADO_COLUMNAS
+// — y porque tanto la Server Action de emisión como el Server Component
+// del dashboard necesitan el mismo tipo y el mismo set de columnas, sin
+// mantener dos listas a mano por separado.
+export interface Certificado {
+  id: string
+  curso_slug: string
+  curso_titulo: string
+  curso_version: string
+  carga_horaria_horas: number
+  nombre_completo: string
+  emisor: string
+  fecha_finalizacion: string
+  fecha_emision: string
+}
+
+export const CERTIFICADO_COLUMNAS =
+  'id, curso_slug, curso_titulo, curso_version, carga_horaria_horas, nombre_completo, emisor, fecha_finalizacion, fecha_emision'

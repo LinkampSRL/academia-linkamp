@@ -9,26 +9,11 @@ import {
   type ProgresoModuloFinalizacion,
   type IntentoFinalizacion,
 } from '@/lib/finalizacion'
-import { construirSnapshotCertificado } from '@/lib/certificado'
-
-export interface Certificado {
-  id: string
-  curso_slug: string
-  curso_titulo: string
-  curso_version: string
-  carga_horaria_horas: number
-  nombre_completo: string
-  emisor: string
-  fecha_finalizacion: string
-  fecha_emision: string
-}
+import { construirSnapshotCertificado, CERTIFICADO_COLUMNAS, type Certificado } from '@/lib/certificado'
 
 export type EmitirCertificadoResult =
   | { ok: true; certificado: Certificado }
   | { ok: false; error: string }
-
-const CERTIFICADO_COLUMNAS =
-  'id, curso_slug, curso_titulo, curso_version, carga_horaria_horas, nombre_completo, emisor, fecha_finalizacion, fecha_emision'
 
 // Emite el certificado del alumno autenticado para "el" curso (getCourse(),
 // igual que el resto de la app — sin soporte multi-curso todavía). Sin
