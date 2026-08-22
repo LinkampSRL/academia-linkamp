@@ -2,6 +2,7 @@
   "slug": "balanzas-electronicas",
   "titulo": "Reparación y Mantenimiento de Balanzas Electrónicas",
   "version": "REV00",
+  "carga_horaria_horas": 6,
   "modulos": [
     { "orden": 1, "slug": "01-introduccion",              "titulo": "Introducción",                 "tiene_evaluacion": true  },
     { "orden": 2, "slug": "02-celdas-de-carga",           "titulo": "Celdas de Carga",              "tiene_evaluacion": true  },

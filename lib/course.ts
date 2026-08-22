@@ -14,6 +14,7 @@ export interface Curso {
   slug: string
   titulo: string
   version: string
+  carga_horaria_horas: number
   modulos: Modulo[]
 }
 
