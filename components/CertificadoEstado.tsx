@@ -35,11 +35,19 @@ export default function CertificadoEstado({ finalizado, certificadoInicial }: Ce
 
   if (certificado) {
     return (
-      <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-5 flex flex-col gap-1">
-        <p className="text-[13px] font-medium text-gray-900">✓ Certificado emitido</p>
-        <p className="text-[12px] text-gray-500">
-          Emitido el {new Date(certificado.fecha_emision).toLocaleDateString('es-AR')}
-        </p>
+      <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-5 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-[13px] font-medium text-gray-900">✓ Certificado emitido</p>
+          <p className="text-[12px] text-gray-500">
+            Emitido el {new Date(certificado.fecha_emision).toLocaleDateString('es-AR')}
+          </p>
+        </div>
+        <a
+          href="/dashboard/certificado/descargar"
+          className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium px-4 py-2 rounded-lg transition-colors"
+        >
+          Descargar certificado
+        </a>
       </div>
     )
   }
