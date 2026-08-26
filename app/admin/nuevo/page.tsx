@@ -24,7 +24,8 @@ export default async function NuevoAlumnoPage() {
       </Link>
       <h1 className="text-[22px] font-medium text-gray-900 mb-1">Nuevo alumno</h1>
       <p className="text-[13px] text-gray-500 mb-6">
-        Se le va a enviar un email para que defina su propia contraseña — vos no la definís acá.
+        No se envía ningún email automático: al crear el alumno vas a recibir un enlace de acceso que
+        tenés que copiar y mandarle vos mismo.
       </p>
       <AltaAlumnoForm />
     </div>
