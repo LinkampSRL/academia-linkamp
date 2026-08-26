@@ -18,6 +18,7 @@ import {
 import { CERTIFICADO_COLUMNAS, type Certificado } from '@/lib/certificado'
 import Topbar from '@/components/Topbar'
 import CertificadoEstado from '@/components/CertificadoEstado'
+import LegalFooter from '@/components/LegalFooter'
 
 function formatFecha(fecha: string | null): string {
   if (!fecha) return 'Sin fecha de vencimiento'
@@ -166,6 +167,8 @@ export default async function DashboardPage() {
             )
           })}
         </div>
+
+        <LegalFooter />
       </main>
     </div>
   )

@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import LegalFooter from '@/components/LegalFooter'
 
 const inputClass =
   'w-full px-3 py-2 text-[14px] text-gray-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500'
@@ -152,6 +153,8 @@ export default function SetPasswordPage() {
             </button>
           </form>
         )}
+
+        <LegalFooter />
       </div>
     </div>
   )

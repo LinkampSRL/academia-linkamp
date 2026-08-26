@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CERTIFICADO_COLUMNAS, esUuidValido, type Certificado } from '@/lib/certificado'
+import LegalFooter from '@/components/LegalFooter'
 
 export const metadata: Metadata = {
   title: 'Verificación de certificado | Academia Linkamp',
@@ -73,6 +74,8 @@ export default async function VerificacionCertificadoPage({
             <p className="text-[13px] text-gray-600">Certificado no encontrado o inválido.</p>
           )}
         </div>
+
+        <LegalFooter />
       </div>
     </div>
   )

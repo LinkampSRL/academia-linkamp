@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { login, type LoginState } from './actions'
+import LegalFooter from '@/components/LegalFooter'
 
 const initialState: LoginState = { error: null }
 
@@ -63,6 +64,8 @@ export default function LoginPage() {
             {pending ? 'Ingresando…' : 'Ingresar'}
           </button>
         </form>
+
+        <LegalFooter />
       </div>
     </div>
   )
