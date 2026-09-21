@@ -127,9 +127,10 @@ export async function crearAlumno(input: AltaAlumnoInput): Promise<{ id: string;
   // redirectTo sale exclusivamente de SITE_URL (variable server-only fija
   // por entorno) — nunca de un header de la request ni de un valor
   // enviado por el cliente. Requiere que esa URL esté en Redirect URLs
-  // del proyecto de Supabase. Apunta a /auth/confirm: ese Route Handler
-  // resuelve el token_hash vía verifyOtp server-side antes de redirigir
-  // a /set-password.
+  // del proyecto de Supabase. Apunta a /auth/confirm: una página intermedia que
+  // NO consume el token al abrirse — lo resuelve vía verifyOtp una Server
+  // Action solo cuando la persona toca "Continuar" (así GET/HEAD, previews
+  // y escáneres no lo gastan) y después redirige a /set-password.
   const redirectTo = `${process.env.SITE_URL!}/auth/confirm`
 
   const { data, error } = await admin.auth.admin.generateLink({

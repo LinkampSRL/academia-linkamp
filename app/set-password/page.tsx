@@ -8,7 +8,7 @@ import LegalFooter from '@/components/LegalFooter'
 const inputClass =
   'w-full px-3 py-2 text-[14px] text-gray-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500'
 
-type Estado = 'verificando' | 'valido' | 'invalido'
+type Estado = 'verificando' | 'valido' | 'invalido' | 'listo'
 
 const MENSAJE_INVALIDO =
   'Tu link de invitación no es válido o ya expiró. Pedile al administrador que te reenvíe el acceso.'
@@ -78,6 +78,10 @@ export default function SetPasswordPage() {
       return
     }
 
+    setEstado('listo')
+  }
+
+  function ingresarAlCurso() {
     router.push('/')
     router.refresh()
   }
@@ -88,7 +92,9 @@ export default function SetPasswordPage() {
         <div className="flex flex-col items-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/Logo Linkamp 003 - PNG.png" alt="Linkamp" className="h-12 w-auto mb-3" />
-          <h1 className="text-[15px] font-medium text-gray-900">Definí tu contraseña</h1>
+          <h1 className="text-[15px] font-medium text-gray-900">
+            {estado === 'listo' ? 'Acceso activado' : 'Definí tu contraseña'}
+          </h1>
         </div>
 
         {estado === 'verificando' && (
@@ -152,6 +158,28 @@ export default function SetPasswordPage() {
               {pending ? 'Guardando...' : 'Guardar contraseña'}
             </button>
           </form>
+        )}
+
+        {estado === 'listo' && (
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 flex flex-col items-center gap-4 text-center">
+            <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
+              <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-[15px] font-medium text-gray-900">¡Contraseña guardada!</h2>
+            <p className="text-[13px] text-gray-600">
+              Tu acceso ya está activo. La próxima vez podés ingresar con{' '}
+              <strong className="text-gray-900">{email}</strong> y la contraseña que acabás de definir.
+            </p>
+            <button
+              type="button"
+              onClick={ingresarAlCurso}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium px-4 py-2.5 rounded-lg transition-colors"
+            >
+              Ingresar al curso
+            </button>
+          </div>
         )}
 
         <LegalFooter />
