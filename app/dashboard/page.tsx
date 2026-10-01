@@ -120,14 +120,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {estadoFinalizacion.finalizado && estadoFinalizacion.fechaFinalizacion ? (
-          <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-5 flex flex-col gap-1">
-            <p className="text-[14px] font-medium text-green-800">🎉 ¡Felicitaciones! Completaste el curso.</p>
-            <p className="text-[12px] text-green-700">
-              Finalizado el {new Date(estadoFinalizacion.fechaFinalizacion).toLocaleDateString('es-AR')}
-            </p>
-          </div>
-        ) : (
+        {!(estadoFinalizacion.finalizado && estadoFinalizacion.fechaFinalizacion) && (
           <Link
             href={cta.href}
             className="inline-flex items-center gap-2 mt-6 bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium px-5 py-2.5 rounded-lg transition-colors"
@@ -139,7 +132,11 @@ export default async function DashboardPage() {
           </Link>
         )}
 
-        <CertificadoEstado finalizado={estadoFinalizacion.finalizado} certificadoInicial={certificado} />
+        <CertificadoEstado
+          finalizado={estadoFinalizacion.finalizado}
+          fechaFinalizacion={estadoFinalizacion.fechaFinalizacion}
+          certificadoInicial={certificado}
+        />
 
         <h2 className="text-[13px] font-medium text-gray-900 mt-12 mb-4">Módulos del curso</h2>
 
