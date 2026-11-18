@@ -3,8 +3,9 @@
 import { useActionState, useState } from 'react'
 import Link from 'next/link'
 import { altaAlumno, type AltaAlumnoState } from '@/app/admin/actions'
+import CredencialesPanel from '@/components/admin/CredencialesPanel'
 
-const initialState: AltaAlumnoState = { error: null, link: null }
+const initialState: AltaAlumnoState = { error: null, link: null, credenciales: null }
 
 const inputClass =
   'w-full px-3 py-2 text-[14px] text-gray-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500'
@@ -22,12 +23,25 @@ function en30DiasISO(): string {
 export default function AltaAlumnoForm() {
   const [state, formAction, pending] = useActionState(altaAlumno, initialState)
   const [copiado, setCopiado] = useState(false)
+  // Solo para saludar por su nombre en el mensaje de WhatsApp; se guarda
+  // al enviar el formulario (la contraseña NO se guarda acá, vive en state).
+  const [nombreCreado, setNombreCreado] = useState<string | null>(null)
 
   async function copiarEnlace() {
     if (!state.link) return
     await navigator.clipboard.writeText(state.link)
     setCopiado(true)
     setTimeout(() => setCopiado(false), 2000)
+  }
+
+  if (state.credenciales) {
+    return (
+      <CredencialesPanel titulo="Alumno creado." nombre={nombreCreado} credenciales={state.credenciales}>
+        <Link href="/admin" className="text-[12px] text-gray-500 hover:text-gray-700">
+          Volver al listado
+        </Link>
+      </CredencialesPanel>
+    )
   }
 
   if (state.link) {
@@ -62,7 +76,10 @@ export default function AltaAlumnoForm() {
 
   return (
     <form
-      action={formAction}
+      action={(formData) => {
+        setNombreCreado(String(formData.get('nombre') ?? '').trim() || null)
+        formAction(formData)
+      }}
       className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 flex flex-col gap-4 max-w-lg"
     >
       <div className="grid grid-cols-2 gap-4">
@@ -127,6 +144,24 @@ export default function AltaAlumnoForm() {
         <input type="checkbox" name="activo" defaultChecked className="rounded border-gray-300" />
         Activo
       </label>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-[12px] font-medium text-gray-700 mb-1">Método de acceso</legend>
+        <label className="flex items-start gap-2 text-[13px] text-gray-700">
+          <input type="radio" name="metodo" value="password" defaultChecked className="mt-1" />
+          <span>
+            <strong>Contraseña temporal</strong> (recomendado). Recibís email y contraseña para mandarle
+            al alumno; al primer ingreso le pide definir la suya.
+          </span>
+        </label>
+        <label className="flex items-start gap-2 text-[13px] text-gray-700">
+          <input type="radio" name="metodo" value="enlace" className="mt-1" />
+          <span>
+            <strong>Enlace de activación</strong> (respaldo). Enlace de un solo uso para definir la
+            contraseña.
+          </span>
+        </label>
+      </fieldset>
 
       {state.error && <p className="text-[12px] text-red-600">{state.error}</p>}
 

@@ -1,11 +1,16 @@
 import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Profile } from '@/lib/profile'
+import { generarPasswordTemporal } from '@/lib/admin/password-temporal'
 
 export type Usuario = Profile & {
   email: string | null
   ultimo_acceso: string | null
   email_confirmado: boolean
+  // true mientras el alumno tenga una contraseña temporal sin cambiar
+  // (app_metadata.must_change_password). Solo el servidor puede escribir
+  // app_metadata; el alumno no puede quitarse esta marca por su cuenta.
+  debe_cambiar_password: boolean
 }
 
 export type Vigencia = 'vigente' | 'proximo_a_vencer' | 'vencido'
@@ -36,7 +41,12 @@ export async function listarUsuarios(): Promise<Usuario[]> {
 
   const authPorId = new Map<
     string,
-    { email: string | null; last_sign_in_at: string | null; email_confirmado: boolean }
+    {
+      email: string | null
+      last_sign_in_at: string | null
+      email_confirmado: boolean
+      debe_cambiar_password: boolean
+    }
   >()
   for (let page = 1; ; page++) {
     const { data, error: usersError } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
@@ -46,6 +56,7 @@ export async function listarUsuarios(): Promise<Usuario[]> {
         email: u.email ?? null,
         last_sign_in_at: u.last_sign_in_at ?? null,
         email_confirmado: Boolean(u.email_confirmed_at),
+        debe_cambiar_password: u.app_metadata?.must_change_password === true,
       })
     }
     if (data.users.length < 1000) break
@@ -58,6 +69,7 @@ export async function listarUsuarios(): Promise<Usuario[]> {
       email: auth?.email ?? null,
       ultimo_acceso: auth?.last_sign_in_at ?? null,
       email_confirmado: auth?.email_confirmado ?? false,
+      debe_cambiar_password: auth?.debe_cambiar_password ?? false,
     }
   })
 }
@@ -160,6 +172,107 @@ export async function crearAlumno(input: AltaAlumnoInput): Promise<{ id: string;
   const link = construirEnlaceAuth(data.properties.hashed_token, 'invite')
 
   return { id, link }
+}
+
+export type CredencialesTemporales = {
+  email: string
+  password: string
+  loginUrl: string
+}
+
+function urlLogin(): string {
+  return `${process.env.SITE_URL!}/login`
+}
+
+// Alta con contraseña temporal (método principal): sin ningún token ni
+// enlace de por medio, así que nada que una vista previa, un escáner o un
+// doble toque pueda gastar. createUser() inserta en auth.users y dispara el
+// mismo trigger handle_new_user que generateLink() (nombre/apellido/
+// empresa/fechas salen de user_metadata; rol='alumno' y activo=true están
+// hardcodeados en el trigger). La marca must_change_password va en
+// app_metadata, que solo se puede escribir con service_role: el alumno no
+// puede quitársela con su propia sesión. email_confirm=true porque no hay
+// ningún email que confirmar (el acceso se entrega manualmente).
+// La contraseña solo se devuelve acá — no se guarda ni se loguea.
+export async function crearAlumnoConPasswordTemporal(
+  input: AltaAlumnoInput
+): Promise<{ id: string; credenciales: CredencialesTemporales }> {
+  const admin = createAdminClient()
+  const password = generarPasswordTemporal()
+
+  const { data, error } = await admin.auth.admin.createUser({
+    email: input.email,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      nombre: input.nombre,
+      apellido: input.apellido,
+      empresa: input.empresa,
+      fecha_inicio: input.fecha_inicio,
+      fecha_vencimiento: input.fecha_vencimiento,
+    },
+    app_metadata: { must_change_password: true },
+  })
+
+  if (error) throw error
+
+  const id = data.user.id
+
+  if (!input.activo) {
+    const { error: updateError } = await admin.from('profiles').update({ activo: false }).eq('id', id)
+    if (updateError) throw updateError
+  }
+
+  return { id, credenciales: { email: input.email, password, loginUrl: urlLogin() } }
+}
+
+// "Regenerar acceso": reemplaza la contraseña de un alumno por una temporal
+// nueva y VUELVE a exigir el cambio. Contraseña y marca se escriben en una
+// sola llamada a updateUserById — no existe un instante en que la
+// contraseña nueva esté activa sin la marca. Verificado: Supabase cierra
+// las sesiones abiertas del alumno al reemplazar su contraseña, y los
+// enlaces de recuperación/invitación emitidos antes quedan inválidos; si
+// alguna sesión sobreviviera, el proxy lee la marca fresca de Auth en cada
+// request y también la obligaría a cambiar. email_confirm=true cubre a un alumno
+// invitado por enlace que nunca llegó a activarse (sin confirmar no podría
+// ingresar con contraseña). Nunca opera sobre un admin: relee el rol acá,
+// sin confiar en que el llamador ya lo haya verificado.
+export async function regenerarAccesoTemporal(
+  userId: string
+): Promise<{ credenciales: CredencialesTemporales }> {
+  const admin = createAdminClient()
+
+  const { data: profile, error: profileError } = await admin
+    .from('profiles')
+    .select('rol')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (profileError || !profile || (profile as Pick<Profile, 'rol'>).rol !== 'alumno') {
+    throw new Error('Solo se puede regenerar el acceso de un alumno.')
+  }
+
+  const { data: userData, error: userError } = await admin.auth.admin.getUserById(userId)
+  if (userError || !userData.user) {
+    throw userError ?? new Error('Usuario no encontrado.')
+  }
+
+  const { user } = userData
+  if (!user.email) {
+    throw new Error('El usuario no tiene un email asociado.')
+  }
+
+  const password = generarPasswordTemporal()
+
+  const { error } = await admin.auth.admin.updateUserById(userId, {
+    password,
+    email_confirm: true,
+    app_metadata: { ...user.app_metadata, must_change_password: true },
+  })
+
+  if (error) throw error
+
+  return { credenciales: { email: user.email, password, loginUrl: urlLogin() } }
 }
 
 function construirEnlaceAuth(hashedToken: string, type: 'invite' | 'recovery'): string {
@@ -271,6 +384,7 @@ export async function obtenerAlumno(id: string): Promise<Usuario | null> {
     email: userData.user.email ?? null,
     ultimo_acceso: userData.user.last_sign_in_at ?? null,
     email_confirmado: Boolean(userData.user.email_confirmed_at),
+    debe_cambiar_password: userData.user.app_metadata?.must_change_password === true,
   }
 }
 

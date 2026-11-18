@@ -45,6 +45,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
+  // Contraseña temporal sin cambiar: nada del sitio protegido está
+  // disponible hasta definir la contraseña propia. getUser() revalida contra
+  // Supabase Auth en cada request, así que la marca es siempre la actual:
+  // una regeneración de acceso obliga también a una sesión ya abierta. La
+  // marca vive en app_metadata, que el alumno no puede modificar. Va antes
+  // de cualquier otro chequeo (rol, vigencia) y /cambiar-contrasena está
+  // fuera del `matcher`, así que no puede haber un loop.
+  if (user.app_metadata?.must_change_password === true) {
+    return NextResponse.redirect(new URL('/cambiar-contrasena', request.url))
+  }
+
   const profile = await getProfile(supabase, user.id)
 
   if (!profile) {

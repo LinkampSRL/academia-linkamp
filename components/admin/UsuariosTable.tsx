@@ -97,6 +97,13 @@ export default function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
                     accion={regenerarEnlace}
                     etiqueta="Generar nuevo enlace"
                   />
+                ) : usuario.rol === 'alumno' && usuario.debe_cambiar_password ? (
+                  <span
+                    className="text-[11px] text-amber-600 whitespace-nowrap"
+                    title="Tiene una contraseña temporal sin cambiar"
+                  >
+                    Contraseña temporal pendiente
+                  </span>
                 ) : (
                   <span className="text-gray-300">—</span>
                 )}

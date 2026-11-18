@@ -3,10 +3,11 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getProfile } from '@/lib/profile'
 import { obtenerAlumno } from '@/lib/admin/usuarios'
-import { generarEnlaceRecuperacionAction } from '@/app/admin/actions'
+import { generarEnlaceRecuperacionAction, regenerarAcceso } from '@/app/admin/actions'
 import EditarAlumnoForm from '@/components/admin/EditarAlumnoForm'
 import EliminarAlumnoButton from '@/components/admin/EliminarAlumnoButton'
 import RegenerarEnlaceButton from '@/components/admin/RegenerarEnlaceButton'
+import RegenerarAccesoButton from '@/components/admin/RegenerarAccesoButton'
 
 // Etapa 3 del Sprint 5.4: edición de alumno. Aplica solo a rol='alumno'
 // — un admin nunca es un resultado válido de obtenerAlumno(), así que
@@ -48,16 +49,25 @@ export default async function EditarAlumnoPage({
       </p>
       <EditarAlumnoForm alumno={alumno} />
 
-      {alumno.email_confirmado && (
-        <div className="mt-10 pt-6 border-t border-gray-100 max-w-lg">
-          <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-2">Acceso</p>
-          <RegenerarEnlaceButton
-            userId={alumno.id}
-            accion={generarEnlaceRecuperacionAction}
-            etiqueta="Generar enlace de recuperación"
-          />
-        </div>
-      )}
+      <div className="mt-10 pt-6 border-t border-gray-100 max-w-lg flex flex-col gap-4">
+        <p className="text-[11px] text-gray-400 uppercase tracking-wider">Acceso</p>
+        {alumno.debe_cambiar_password && (
+          <p className="text-[12px] text-amber-700">
+            Tiene una contraseña temporal sin cambiar: va a tener que definir la suya al ingresar.
+          </p>
+        )}
+        <RegenerarAccesoButton userId={alumno.id} nombre={alumno.nombre} accion={regenerarAcceso} />
+        {alumno.email_confirmado && (
+          <div className="flex flex-col gap-1 pt-4 border-t border-gray-100">
+            <p className="text-[11px] text-gray-400">Respaldo: enlace de recuperación (un solo uso)</p>
+            <RegenerarEnlaceButton
+              userId={alumno.id}
+              accion={generarEnlaceRecuperacionAction}
+              etiqueta="Generar enlace de recuperación"
+            />
+          </div>
+        )}
+      </div>
 
       <div className="mt-10 pt-6 border-t border-gray-100 max-w-lg">
         <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-2">Zona de peligro</p>
